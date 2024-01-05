@@ -17,22 +17,25 @@
 #define MAX_QUEUE_SIZE 5
 #define ERROR_CODE -1
 
-typedef struct{
+typedef struct
+{
     int key;
-}element;
+} element;
 
 element queue[MAX_QUEUE_SIZE];
-int rear = -1; 
+int rear = -1;
 int front = -1;
 
 // 큐가 꽉 찼을 때 에러처리
-void queueFull(){
+void queueFull()
+{
     fprintf(stderr, "Queue is Full\n");
     exit(1);
 }
 
 // 큐가 비었을 때 에러처리
-element queueEmpty(){
+element queueEmpty()
+{
     element temp;
     temp.key = ERROR_CODE;
     fprintf(stderr, "Queue is Empty\n");
@@ -40,49 +43,54 @@ element queueEmpty(){
 }
 
 // 큐 삽입
-void addq(element item){
+void addq(element item)
+{
     rear = (rear + 1) % MAX_QUEUE_SIZE;
-    if(front == rear){
+    if (front == rear)
+    {
         queueFull();
-    }else{
-        queue[rear] = item;
     }
+    queue[rear] = item;
 }
 
 // 큐 삭제
-element deleteq(){
-    if (front == rear){
+element deleteq()
+{
+    if (front == rear)
+    {
         return queueEmpty();
-    }else{
-        front = (front + 1)% MAX_QUEUE_SIZE;
-        return queue[front];
     }
+    front = (front + 1) % MAX_QUEUE_SIZE;
+    return queue[front];
 }
 
 // 큐 출력
-void printQueue(){
+void printQueue()
+{
     int i;
 
     printf("front : %d rear : %d\n", front, rear);
     printf("Queue : ");
-    if (front == rear){
+    if (front == rear)
+    {
         printf("\n");
         return;
     }
-    else{
-        i = front;
-        while(1){
-            i = (i+1) % MAX_QUEUE_SIZE;
-            printf("[%d] %d ", i, queue[i].key);
-            if(i == rear){
-                break;
-            }
+    i = front;
+    while (1)
+    {
+        i = (i + 1) % MAX_QUEUE_SIZE;
+        printf("[%d] %d ", i, queue[i].key);
+        if (i == rear)
+        {
+            break;
         }
-        printf("\n");
     }
+    printf("\n");
 }
 
-int main(void){
+int main(void)
+{
     element item1, item2, item3;
 
     item1.key = 10;
@@ -117,7 +125,7 @@ int main(void){
     printQueue();
 
     addq(item3);
-    printQueue(); 
+    printQueue();
 
     addq(item1);
     printQueue();
@@ -126,5 +134,4 @@ int main(void){
     printQueue();
 
     return 0;
-
 }

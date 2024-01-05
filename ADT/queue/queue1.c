@@ -35,9 +35,7 @@ element queueEmpty(){
 void addq(element item){
     if(rear == MAX_QUEUE_SIZE - 1){ // 가득차있는 상태
         queueFull();
-    }else{
-        queue[++rear] = item;
-    }
+    }queue[++rear] = item;
 }
 
 //큐의 원소를 삭제하는 함수
