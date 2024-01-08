@@ -48,3 +48,16 @@ void printRangeRecursiveSplit(int start, int stop){ // 재귀 사용 (분할 정
     }
 }
 
+/*  오류 버전 */
+void printRangeRecursiveSplitBad(int start, int stop){
+    int mid;
+
+    if (start == stop){
+        printf("%d\n", start);
+    }else{
+        mid = (start+stop)/2;
+        printRangeRecursiveSplitBad(start, mid);
+        printf("%d\n", mid);
+        printRangeRecursiveSplitBad(mid, stop);
+    }
+}
