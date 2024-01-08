@@ -58,6 +58,6 @@ void printRangeRecursiveSplitBad(int start, int stop){
         mid = (start+stop)/2;
         printRangeRecursiveSplitBad(start, mid);
         printf("%d\n", mid);
-        printRangeRecursiveSplitBad(mid, stop);
+        printRangeRecursiveSplitBad(mid, stop); // mid+1로 수정해야 올바르다
     }
 }
