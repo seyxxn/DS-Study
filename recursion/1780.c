@@ -6,18 +6,15 @@ int n;
 int cntM1 = 0;
 int cnt1 = 0;
 int cnt0 = 0;
+int **arr;
 
-double log_base_3(double x)
-{
-    return log(x) / log(3);
-}
-
-void solve(int **a, int row, int col);
+void solve(int **a, int size);
+int **copyArr(int **arr, int row, int col, int size);
 
 int main()
 {
     scanf("%d", &n);
-    int **arr = (int **)malloc(sizeof(int *) * n);
+    arr = (int **)malloc(sizeof(int *) * n);
     for (int i = 0; i < n; i++)
     {
         arr[i] = (int *)malloc(sizeof(int) * n);
@@ -32,7 +29,7 @@ int main()
         }
     }
 
-    solve(arr, n, n);
+    solve(arr, n);
     printf("%d\n", cntM1);
     printf("%d\n", cnt0);
     printf("%d\n", cnt1);
@@ -43,13 +40,31 @@ int main()
     return 0;
 }
 
-void solve(int **a, int row, int col)
+int **copyArr(int **arr, int row, int col, int size)
+{
+    int **tempArr = (int **)malloc(sizeof(int *) * size);
+
+    for (int i = 0; i < size; i++)
+    {
+        tempArr[i] = (int *)malloc(sizeof(int) * size);
+    }
+
+    for(int i = 0, x = row; i < size; i++, x++){
+        for(int j = 0, y = col; j < size; j++, y++){
+            tempArr[i][j] = arr[x][y];
+        }
+    }
+
+    return tempArr;
+}
+
+void solve(int **a, int size)
 {
     int arrEqual = 1; // 같은지 확인하는 변수
     int firstElement = a[0][0];
-    for (int i = 0; i < row; i++)
+    for (int i = 0; i < size; i++)
     {
-        for (int j = 0; j < col; j++)
+        for (int j = 0; j < size; j++)
         {
             if (a[i][j] != firstElement)
             {
@@ -76,6 +91,54 @@ void solve(int **a, int row, int col)
     } // 같은 수로 되어있지 않다면, 9개로 자르고 재귀함수 사용
     else
     {
-        
+        int **temp1 = copyArr(a, 0, 0, size / 3);
+        solve(temp1, size / 3);
+
+        int **temp2 = copyArr(a, 0, size / 3, size / 3);
+        solve(temp2, size / 3);
+
+        int **temp3 = copyArr(a, 0, 2 * (size / 3), size / 3);
+        solve(temp3, size / 3);
+
+        int **temp4 = copyArr(a, size / 3, 0, size / 3);
+        solve(temp4, size / 3);
+
+        int **temp5 = copyArr(a, size / 3, size / 3, size / 3);
+        solve(temp5, size / 3);
+
+        int **temp6 = copyArr(a, size / 3, 2 * (size / 3), size / 3);
+        solve(temp6, size / 3);
+
+        int **temp7 = copyArr(a, 2 * (size / 3), 0, size / 3);
+        solve(temp7, size / 3);
+
+        int **temp8 = copyArr(a, 2 * (size / 3), size / 3, size / 3);
+        solve(temp8, size / 3);
+
+        int **temp9 = copyArr(a, 2 * (size / 3), 2 * (size / 3), size / 3);
+        solve(temp9, size / 3);
+
+        for (int i = 0; i < size / 3; i++)
+        {
+            free(temp1[i]);
+            free(temp2[i]);
+            free(temp3[i]);
+            free(temp4[i]);
+            free(temp5[i]);
+            free(temp6[i]);
+            free(temp7[i]);
+            free(temp8[i]);
+            free(temp9[i]);
+        }
+
+        free(temp1);
+        free(temp2);
+        free(temp3);
+        free(temp4);     
+        free(temp5);
+        free(temp6);
+        free(temp7);
+        free(temp8);
+        free(temp9);
     }
 }
