@@ -90,7 +90,7 @@ int main(void)
         printf("2. Stack에서 값 꺼내기\n");
         printf("3. Stack에서 가장 위에 있는 값 학인\n");
         printf("4. Stack에 저장된 값의 개수 확인\n");
-        printf("5. Stack에 있는 값 모두 확인");
+        printf("5. Stack에 있는 값 모두 확인\n");
         printf("9. 프로그램 종료 \n\n");
         printf("선택 : ");
         scanf("%d", &select_index);
