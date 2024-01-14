@@ -8,9 +8,9 @@ void pop();
 void solve();
 
 int main(){
-    scanf("%d", &k); // 정수 k 입력 받기
+    scanf("%d", &k); 
     for (int i = 0; i < k; i++){
-        int enter; // 사용자가 입력하는 수
+        int enter; 
         scanf("%d", &enter);
         if (enter == 0){
             pop();
