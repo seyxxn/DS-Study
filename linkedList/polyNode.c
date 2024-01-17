@@ -13,9 +13,10 @@ typedef struct polyNode
     struct polyNode *next;
 } polyNode;
 
-void attach(float coefficient, int exponent, polyNode *head);
+void attach(int coefficient, int exponent, polyNode *head);
 void print_ll(polyNode *head);
 polyNode *padd(polyNode *a, polyNode *b);
+polyNode *pmul(polyNode *a, polyNode *b);
 
 int main()
 {
@@ -35,14 +36,18 @@ int main()
     printf("B의 다항식 : ");
     print_ll(b);
 
-    printf("결과 다항식 : ");
-    print_ll(padd(a,b));
+    printf("다항식의 덧셈 결과 : ");
+    print_ll(padd(a, b));
+
+    printf("다항식의 곱셈 결과 : ");
+    print_ll(pmul(a, b));
+    // 12x^7 + 13X^6 + 18X^5 + 13X^4 + 10X^3 + 13X^2 + 5X^1
 
     return 0;
 }
 
 // 다항식 항 추가 함수
-void attach(float coefficient, int exponent, polyNode *head)
+void attach(int coefficient, int exponent, polyNode *head)
 {
     polyNode *temp = (polyNode *)malloc(sizeof(polyNode)); // 새로운 항
     polyNode *current = head;                              // 현재 연결 리스트의 끝을 찾기 위한 포인터
@@ -74,11 +79,11 @@ void print_ll(polyNode *head)
     {
         if (temp->next == NULL)
         {
-            printf("%d^%d ", temp->coef, temp->expon);
+            printf("%dX^%d ", temp->coef, temp->expon);
         }
         else
         {
-            printf("%d^%d + ", temp->coef, temp->expon);
+            printf("%dX^%d + ", temp->coef, temp->expon);
         }
         temp = temp->next;
     }
@@ -86,13 +91,9 @@ void print_ll(polyNode *head)
 }
 
 // a와 b가 합산된 다항식을 반환하는 함수
-polyNode* padd(polyNode *a, polyNode *b)
+polyNode *padd(polyNode *a, polyNode *b)
 {
     polyNode *c = (polyNode *)malloc(sizeof(polyNode));
-    // polyNode *current = c;
-    // 결과 다항식을 가리킬 포인터. 
-    // 새로운 항이 항상 다항식의 끝에 추가되도록 보장
-
     int sum;
 
     while (a && b)
@@ -122,6 +123,51 @@ polyNode* padd(polyNode *a, polyNode *b)
         attach(a->coef, a->expon, c);
     for (; b; b = b->next)
         attach(b->coef, b->expon, c);
-    
+
+    return c;
+}
+
+// a와 b가 곱해신 다항식을 반환하는 함수
+polyNode *pmul(polyNode *a, polyNode *b)
+{
+    polyNode *c = (polyNode *)malloc(sizeof(polyNode));
+    c->next = NULL;
+
+    polyNode *currentA = a->next;
+    polyNode *currentB = b->next;
+
+    // 각 다항식은 내림차순으로 정리되므로 각 첫 항을 곱해주면 최고차항을 알 수 있음
+    int highest = currentA->expon + currentB->expon;
+
+    // 최고차항의 지수의 크기 만큼 동적 배열을 할당하여 0으로 초기화 (calloc함수 이용)
+    int *multiply = calloc(highest + 1, sizeof(int));
+    // 0승부터 시작해야하므로 + 1
+
+    // a의 n번째 항과 b의 각 항을 곱한 뒤 a는 n+1(그 다음)로, b는 다시 처음으로 돌아가게 함
+    while (currentA != NULL)
+    {
+        if (currentB != NULL)
+        {
+            multiply[currentA->expon + currentB->expon] += currentA->coef * currentB->coef;
+            // printf("%dX^%d ", multiply[currentA->expon + currentB->expon], currentA->expon + currentB->expon);
+            currentB = currentB->next;
+        }
+        else // b가 null이 되어 다 끝나면
+        {
+            currentA = currentA->next; // a는 그 다음으로 넘어감
+            currentB = b->next;              // b는 다시 처음으로
+        }
+    }
+
+
+    // 각 지수에 대응되는 배열 index에 0이 아닌 숫자가 있으면 결과식에 삽입함
+    for (int i = highest; i >= 0; i--)
+    {   
+        if (multiply[i] != 0)
+        {
+            attach(multiply[i], i, c);
+        }
+    }
+
     return c;
 }
