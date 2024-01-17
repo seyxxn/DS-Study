@@ -95,6 +95,19 @@ int main()
     init(phead);
 
     // 추가
+    /*  dinsert(phead, 10);
+        print_dll(phead);
+
+        dinsert(phead->rlink, 23);
+        print_dll(phead);
+
+        dinsert(phead->rlink->rlink, 34);
+        print_dll(phead);
+
+        이렇게 넣으면 10 , 10 23, 10 23 34
+        출력됨
+        즉, 첫번째 인수의 오른쪽에  값이 들어감
+    */
     dinsert(phead, 10);
     print_dll(phead);
 
@@ -104,7 +117,13 @@ int main()
     dinsert(phead, 34);
     print_dll(phead);
 
+    // 이렇게 넣으면 값이 계속해서 head의 오른쪽 (즉, 첫번째 위치)으로 들어가기 때문에
+    // 10
+    // 23 10
+    // 34 23 10 이렇게 값이 출력됨
+
     // 삭제
+
     ddelete(phead, phead->rlink);
     print_dll(phead);
 
