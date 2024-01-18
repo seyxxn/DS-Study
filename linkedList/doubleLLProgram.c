@@ -127,12 +127,62 @@ void insert(int pos, int data, Node **start)
     }
 }
 
+// 위치를 입력받아 삭제시키는 함수
 void deleteByPosition(int pos, Node **start)
 {
+    if (pos < 1 || *start == NULL) // 이상한 값을 입력 받았거나, 비어있거나
+    {
+        puts("Invalid position");
+    }
+    else if (pos == 1) // 첫번째 노드를 삭제하는 경우
+    {
+        Node *temp = *start;
+        *start = (*start)->next; // 시작 노드를 그 다음 노드로 변경
+        free(temp);
+    }
+    else // 위치를 찾음
+    {
+        Node *temp = *start;
+        for (; temp && pos > 1; pos--)
+            temp = temp->next;
+        if (temp == NULL)
+            puts("Invalid position");
+        else
+        {
+            temp->prev->next = temp->next;
+            if (temp->next)
+                temp->next->prev = temp->prev;
+            free(temp);
+        }
+    }
 }
 
+// 값을 입력받아 해당하는 값의 노드를 삭제시키는 함수
 void deleteByValue(int value, Node **start)
 {
+    if ((*start)->data == value) // 삭제하려는 값이 첫번째 값인 경우
+    {
+        Node *temp = *start;
+        *start = (*start)->next;
+        free(temp);
+    }
+    else // 첫번째가 아니면, 해당하는 노드를 찾으러 감
+    {
+        Node *temp = *start;
+        for (; temp && temp->data != value; temp = temp->next)
+            ;
+        if (temp == NULL) // 해당하는 값이 없음
+            puts("Element not found");
+        else
+        {
+            temp->prev->next = temp->next;
+            if (temp->next)
+            {
+                temp->next->prev = temp->prev;
+            }
+            free(temp);
+        }
+    }
 }
 
 void traverse(Node *x)
