@@ -240,10 +240,9 @@ node *delete(node *current)
         {
             if (newNode->next->roll_no == rno)
             {
-                newNode = current;
-                temp = current->next;
+                temp = newNode->next;
                 newNode->next = newNode->next->next;
-                temp->next->prev = current;
+                temp->next->prev = newNode;
                 free(temp);
                 return (current);
             }
