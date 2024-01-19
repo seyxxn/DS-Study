@@ -26,6 +26,13 @@ void rollSrch(node *);      // 학번으로 검색하는 함수
 void nameSrch(node *);      // 이름으로 검색하는 함수
 void markSrch(node *);      // 성적으로 검색하는 함수
 
+/*
+insertAfter 함수는 void형 반환 함수인 반면에, insertBefore 함수는 node *를 반환하는 함수로 구현한 이유 ?
+- insertAfter 함수는 새로운 노드를 뒤에 삽입하는 기능만을 하기 때문에 새로 삽입된 노드의 주소를 반환할 필요가 없다.
+- 반면에 insertBefore 함수는 앞에 새로운 노드를 삽입하는데, 만약 첫 번째 노드 앞에 삽입되는 경우 헤드노드가 변경되어야 한다.
+  따라서 새로 삽입된 노드의 주소를 반환하여, 이를 main 함수에서 헤드 노드에 반영할 수 있또록 한다. 헤드 노드를 가리키는 포인터를 변경하기 위함이다.
+*/
+
 int main(int argc, char *argv[])
 {
     node *head;
