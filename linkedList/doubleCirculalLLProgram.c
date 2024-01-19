@@ -145,7 +145,7 @@ void insertAfter(node *current)
         if (current->roll_no == rno) // 해당학번 찾을 때 까지
         {
             newNode->next = current->next;
-            current->prev->next = newNode;
+            current->next->prev = newNode;
             current->next = newNode;
             newNode->prev = current;
             flag = 1;
@@ -196,6 +196,7 @@ node *insertBefore(node *current)
             newNode->next = temp->next;
             temp->next->prev = newNode;
             newNode->prev = temp;
+            // 있어야한다고 생각..
             temp->next = newNode;
             return (current);
         }
@@ -300,9 +301,7 @@ void rollSrch(node *current)
     // 끝에서 찾음
     if (current->next == NULL && current->roll_no == rno)
         fprintf(stdout, "\n%d \t%s\t%f\n", current->roll_no, current->name, current->marks);
-
-    // 추가해야하는 것 아닌지?
-    if (current->next == NULL && current->roll_no != rno)
+    else
         fprintf(stdout, "\n찾으려는 학번에 해당하는 노드가 존재하지 않습니다.\n");
 }
 
@@ -324,9 +323,7 @@ void nameSrch(node *current)
     // 끝에서 찾음
     if (current->next == NULL && strcmp(current->name, arr) == NULL)
         fprintf(stdout, "\n%d\t%s\t%f\n", current->roll_no, current->name, current->marks);
-
-    // 추가해야하는 것 아닌지?
-    if (current->next == NULL && strcmp(current->name, arr) != NULL)
+    else
         fprintf(stdout, "\n찾으려는 이름에 해당하는 노드가 존재하지 않습니다.\n");
 }
 
@@ -348,9 +345,7 @@ void markSrch(node *current)
     // 끝에서 찾음
     if (current->next == NULL && current->marks == marks)
         fprintf(stdout, "\n%d\t%s\t%f\n", current->roll_no, current->name, current->marks);
-
-    // 추가해야하는 것 아닌지?
-    if (current->next == NULL && current->marks != marks)
+    else
         fprintf(stdout, "\n찾으려는 성적에 해당하는 노드가 존재하지 않습니다.\n");
 }
 
