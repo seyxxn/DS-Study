@@ -1,110 +1,132 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-char enter[100000];
-int M;
-// 연결리스트 문제
-// 이중 연결리스트 ?
-typedef struct Node
+
+typedef struct listNode
 {
     char ch;
-    struct Node *llink;
-    struct Node *rlink;
-} Node;
+    struct listNode *llink;
+    struct listNode *rlink;
+} listNode;
 
-void createNode(Node **head, Node **tail, char data)
+typedef struct listNode * listPointer; 
+
+void left(listPointer *first, listPointer *cursor){
+    if(*first == NULL) return; // 빈 리스트일 때
+    if((*cursor)->llink)
+        *cursor = (*cursor)->llink;
+}
+
+void right(listPointer *first, listPointer *cursor){
+    if(*first==NULL) return; // 빈 리스트일 때
+    if((*cursor)->rlink)
+        *cursor = (*cursor)->rlink;
+}
+
+// cursor 변수가 가리키는 곳 뒤에 삽입해야함
+void createNode(listPointer *head, listPointer *first, listPointer *cursor, int data)
 {
-    Node *newNode = (Node *)malloc(sizeof(Node));
+    listPointer newNode = (listPointer)malloc(sizeof(listNode));
     newNode->ch = data;
     newNode->llink = NULL;
     newNode->rlink = NULL;
 
-    if (*head == NULL) // 비어있는 경우, 즉 처음 넣는 경우
+    if (*first == NULL) // 비어있는 경우, 즉 처음 넣는 경우
     {
-        *head = newNode;
-        *tail = newNode;
+        *first = newNode;
+        *cursor = newNode;
         return;
     }
 
-    // 가장 끝에 삽입해야함
-    Node *p = *tail;
-    while (p->rlink != NULL)
-        p = p->rlink;
-
-    newNode->rlink = p->rlink;
-    newNode->llink = p;
-    p->rlink = newNode;
-    tail = &newNode;
+    newNode->llink = *cursor;
+    newNode->rlink = (*cursor)->rlink;
+    if((*cursor)->rlink) 
+        (*cursor)->rlink->llink = newNode;
+    (*cursor)->rlink = newNode;
+    *cursor = newNode;
 }
 
-void printNode(Node *head)
+void printNode(listPointer first)
 {
-    Node *current = head;
+    listPointer p = first;
 
-    while (current != NULL)
+    while (p != NULL)
     {
-        printf("%c", current->ch);
-        current = current->rlink;
+        printf("%c", p->ch);
+        p = p->rlink;
     }
     printf("\n");
 }
 
-// 커서 왼쪽에 있는 문자를 삭제함 (tail이 가리키고 있는 것을 삭제해야함)
-void deleteNode(Node **tail)
+// 커서 왼쪽에 있는 문자를 삭제함 (cursor변수가 가리키고 있는 것을 삭제해야함)
+void deleteNode(listPointer *head, listPointer *first, listPointer *cursor)
 {
-    Node *temp = *tail;
-    if (temp-> llink == NULL)
+    listPointer temp = *cursor;
+    if (temp == *head) // 커서가 문장의 맨 앞이면 무시됨
         return;
 
     temp->llink->rlink = temp->rlink;
-    temp->rlink->llink = temp->llink;
-    *tail = temp->llink;
+    if (temp->rlink)
+        temp->rlink->llink = temp->llink;
+    *cursor = temp->llink;
 
     free(temp);
 }
 
 int main()
 {
-    scanf("%s", enter);
+    char enter[100000];
+    int M;
+
+    // fgets로 한 줄 전체를 입력받음
+    fgets(enter, sizeof(enter), stdin);
+    // 개행 문자 제거
+    enter[strcspn(enter, "\n")] = '\0';
     scanf("%d", &M);
+    getchar();
 
     int stringLen = strlen(enter);
-    Node *word = (Node *)malloc(sizeof(Node));
-    Node *head = NULL;
-    Node *tail = NULL;
 
-    head = word;
-    tail = word;
+    listPointer first = NULL; 
+    listPointer cursor = NULL;
+    
+    listPointer head = (listPointer)malloc(sizeof(listNode));
+    head->ch = ' ';
+    head->llink = NULL;
+    head->rlink = first; // 변하지 않음
+
 
     for (int i = 0; i < stringLen; i++)
     {
-        createNode(&head, &tail, enter[i]);
+        createNode(&head, &first, &cursor, enter[i]);
     }
 
-    printNode(word);
 
-    while (M--)
+    for(int i = 0; i < M; i++)
     {
         char menu[10];
-        scanf("%s", menu);
+        fgets(menu, sizeof(menu), stdin);
+        // 개행 문자 제거
+        menu[strcspn(menu, "\n")] = '\0';
+
         if (strcmp(menu, "L") == 0)
         {
-            if (tail->llink != NULL)
-            {
-                tail = tail->llink;
-            }
+            left(&first, &cursor);
         }
         else if (strcmp(menu, "D") == 0)
         {
-            if (tail->rlink != NULL)
-            {
-                tail = tail->rlink;
-            }
+           right(&first, &cursor);
         }
         else if (strcmp(menu, "B") == 0)
         {
-            deleteNode(&tail);
+            deleteNode(&head, &first, &cursor);
+        }else{
+            createNode(&head, &first, &cursor, menu[2]);
         }
-        printNode(word);
+         printNode(first);
     }
+
+    printNode(first);
+
+   return 0;
 }
