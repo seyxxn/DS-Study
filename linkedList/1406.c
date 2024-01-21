@@ -23,34 +23,29 @@ void right(listPointer *first, listPointer *cursor){
         *cursor = (*cursor)->rlink;
 }
 
-// cursor 변수가 가리키는 곳 뒤에 삽입해야함
-void createNode(listPointer *head, listPointer *first, listPointer *cursor, int data)
+void createNode(listPointer *cur, char data)
 {
     listPointer newNode = (listPointer)malloc(sizeof(listNode));
     newNode->ch = data;
-    newNode->llink = NULL;
-    newNode->rlink = NULL;
+    newNode->llink = *cur;
 
-    if (*first == NULL) // 비어있는 경우, 즉 처음 넣는 경우
+    if ((*cur)->rlink)
     {
-        *first = newNode;
-        *cursor = newNode;
-        return;
+        newNode->rlink = (*cur)->rlink;
+        (*cur)->rlink->llink = newNode;
+    }else{
+        newNode->rlink = NULL;
     }
 
-    newNode->llink = *cursor;
-    newNode->rlink = (*cursor)->rlink;
-    if((*cursor)->rlink) 
-        (*cursor)->rlink->llink = newNode;
-    (*cursor)->rlink = newNode;
-    *cursor = newNode;
+    (*cur)->rlink = newNode;
+    *cur = (*cur)->rlink;
 }
 
-void printNode(listPointer first)
+void printNode(listPointer head)
 {
-    listPointer p = first;
-
-    while (p != NULL)
+    listPointer p = head;
+    p = p-> rlink;
+    while (p)
     {
         printf("%c", p->ch);
         p = p->rlink;
@@ -59,74 +54,75 @@ void printNode(listPointer first)
 }
 
 // 커서 왼쪽에 있는 문자를 삭제함 (cursor변수가 가리키고 있는 것을 삭제해야함)
-void deleteNode(listPointer *head, listPointer *first, listPointer *cursor)
+void deleteNode(listPointer *cur)
 {
-    listPointer temp = *cursor;
-    if (temp == *head) // 커서가 문장의 맨 앞이면 무시됨
-        return;
+    if((*cur)->llink == NULL) return;
 
-    temp->llink->rlink = temp->rlink;
-    if (temp->rlink)
-        temp->rlink->llink = temp->llink;
-    *cursor = temp->llink;
+    listPointer p = *cur;
+    *cur = p->llink;
 
-    free(temp);
+    if (p->rlink){
+        (*cur)->rlink = p->rlink;
+        p->rlink->llink = *cur;
+        // p->llink = NULL;
+    }else{
+        (*cur)->rlink = NULL;
+    }
+
+    free(p);
 }
 
 int main()
 {
-    char enter[100000];
-    int M;
-
-    // fgets로 한 줄 전체를 입력받음
-    fgets(enter, sizeof(enter), stdin);
-    // 개행 문자 제거
-    enter[strcspn(enter, "\n")] = '\0';
-    scanf("%d", &M);
-    getchar();
-
-    int stringLen = strlen(enter);
-
-    listPointer first = NULL; 
-    listPointer cursor = NULL;
-    
     listPointer head = (listPointer)malloc(sizeof(listNode));
     head->ch = ' ';
     head->llink = NULL;
-    head->rlink = first; // 변하지 않음
+    head->rlink = NULL;
 
+    listPointer cur = head;
+    char enter;
 
-    for (int i = 0; i < stringLen; i++)
-    {
-        createNode(&head, &first, &cursor, enter[i]);
+    while((enter = getchar())!= '\n'){
+        listPointer newNode = (listPointer)malloc(sizeof(listNode));
+        newNode->ch = enter;
+        newNode->llink = cur;
+        newNode->rlink = NULL;
+        cur->rlink = newNode;
+        cur = newNode;
     }
 
-
-    for(int i = 0; i < M; i++)
+    int m;
+    scanf("%d", &m);
+    for(int i = 0; i < m; i++)
     {
-        char menu[10];
-        fgets(menu, sizeof(menu), stdin);
-        // 개행 문자 제거
-        menu[strcspn(menu, "\n")] = '\0';
+        char menu;
+        scanf(" %c", &menu);
 
-        if (strcmp(menu, "L") == 0)
-        {
-            left(&first, &cursor);
+        switch(menu){
+            case 'L' :
+            {
+                if (cur->llink) cur = cur->llink;
+                break;
+            }
+            case 'D' :
+            {
+                if (cur->rlink) cur = cur->rlink;
+                break;
+            }
+            case 'B':
+            {
+                deleteNode(&cur);
+                break;
+            }
+            case 'P':
+            {
+                char ch;
+                scanf(" %c", &ch);
+                createNode(&cur, ch);
+                break;
+            }
         }
-        else if (strcmp(menu, "D") == 0)
-        {
-           right(&first, &cursor);
-        }
-        else if (strcmp(menu, "B") == 0)
-        {
-            deleteNode(&head, &first, &cursor);
-        }else{
-            createNode(&head, &first, &cursor, menu[2]);
-        }
-         printNode(first);
     }
-
-    printNode(first);
-
+    printNode(head);
    return 0;
 }
