@@ -20,7 +20,7 @@ void push(heapType *h, int data)
     h->heapSize = h->heapSize + 1;
     int i = h->heapSize;
 
-    while ((i != 1) && (data > h->heap[i / 2]))
+    while ((i != 1) && data > h->heap[i / 2])
     {
         h->heap[i] = h->heap[i / 2];
         i /= 2;
@@ -35,23 +35,21 @@ void pop(heapType *h)
         printf("0\n");
         return;
     }
-    int item, temp;
     int parent = 1;
     int child = 2;
-
-    item = h->heap[1]; // 가장 큰 값 저장
-    temp = h->heap[h->heapSize];
+    int item = h->heap[1];
+    int temp = h->heap[h->heapSize];
     h->heapSize = h->heapSize - 1;
 
     while (child <= h->heapSize)
     {
-        if ((child < h->heapSize) && (h->heap[child]) < (h->heap[child + 1]))
+        if ((child < h->heapSize) && (h->heap[child] < h->heap[child + 1]))
             child++;
-        if (h->heap[child] <= temp)
+        if (temp >= h->heap[child])
             break;
         h->heap[parent] = h->heap[child];
         parent = child;
-        child *= 2;
+        child = child * 2;
     }
     h->heap[parent] = temp;
     printf("%d\n", item);
