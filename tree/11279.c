@@ -1,91 +1,42 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
-#define MAX_ELEMENT 100000
+#include <math.h>
+typedef unsigned long long ull;
 
-typedef struct heapType
-{
-    int heap[MAX_ELEMENT];
-    int heapSize;
-} heapType;
+ull n;
+ull count = 0;
 
-heapType *createHeap()
+void move(ull n, char start, char to);
+void hanoi(ull n, char start, char to, char via);
+
+void hanoi(ull n, char start, char to, char via)
 {
-    heapType *h = (heapType *)malloc(sizeof(heapType));
-    h->heapSize = 0;
-    return h;
+    if (n == 1)
+    {
+        move(1, start, to);
+    }
+    else
+    {
+        hanoi(n - 1, start, via, to);
+        move(1, start, to);
+        hanoi(n - 1, via, to, start);
+    }
 }
 
-void push(heapType *h, int data)
+void move(ull n, char start, char to)
 {
-    h->heapSize = h->heapSize + 1;
-    int i = h->heapSize;
-
-    while ((i != 1) && data > h->heap[i / 2])
-    {
-        h->heap[i] = h->heap[i / 2];
-        i /= 2;
-    }
-    h->heap[i] = data;
-}
-
-void pop(heapType *h)
-{
-    if (h->heapSize == 0)
-    {
-        printf("0\n");
-        return;
-    }
-    int parent = 1;
-    int child = 2;
-    int item = h->heap[1];
-    int temp = h->heap[h->heapSize];
-    h->heapSize = h->heapSize - 1;
-
-    while (child <= h->heapSize)
-    {
-        if ((child < h->heapSize) && (h->heap[child] < h->heap[child + 1]))
-            child++;
-        if (temp >= h->heap[child])
-            break;
-        h->heap[parent] = h->heap[child];
-        parent = child;
-        child = child * 2;
-    }
-    h->heap[parent] = temp;
-    printf("%d\n", item);
-}
-
-void printHeap(heapType *h)
-{
-    for (int i = 1; i <= h->heapSize; i++)
-    {
-        printf("[%d] : %d ", i, h->heap[i]); // 1부터 값을 저장함
-    }
-    printf("\n");
+    printf("%c %c\n", start, to);
 }
 
 int main()
 {
-    int n;
-    scanf("%d", &n);
+    scanf("%lld", &n);
 
-    heapType *h = createHeap();
-
-    while (n--)
-    {
-        int enter;
-        scanf("%d", &enter);
-
-        switch (enter)
-        {
-        case 0:
-            pop(h);
-            break;
-        default:
-            push(h, enter);
-            break;
-        }
-
-        // printHeap(h);
-    }
+    printf("%.0f\n", pow(2, n) - 1);
+    hanoi(n, '1', '3', '2');
+    return 0;
 }
+
+// n개의 원판, 3개의 장대
+// A B 출력 -> A판의 가장 위에 있는 원판을 B판으로 옮긴다는 의미
