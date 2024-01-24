@@ -55,30 +55,31 @@ void pop(heapType *h)
     int parent = 1;
     int child = 2;
     int item = h->heap[1];
-    // 이렇게하면 절대값이 가장 작은 값을 item이 가지게 됨 (제일 위에 오는 수를 저장하는 변수라고 생각)
     int temp = h->heap[h->heapSize];
     h->heapSize = h->heapSize - 1;
 
-    // 위에서부터 재구성
     while (child <= h->heapSize)
     {
-        if (child < h->heapSize)
+        if (child < h->heapSize && abs(h->heap[child]) > abs(h->heap[child + 1]))
         {
-            // 자식들의 절대값이 같을 때를 따로 처리해야함 -> 절대값이 작다면, 더 작은 수를 위로 올린다
-            if ((abs(h->heap[child]) == abs(h->heap[child + 1])) && (h->heap[child] > h->heap[child + 1]))
-            {
-                child++;
-            }
-            if (abs(h->heap[child]) > abs(h->heap[child + 1]))
-            {
-                child++;
-            }
+            child++; // 왼쪽 자식보다 오른쪽 자식이 더 작은 수라면 child++;
         }
 
-        if (abs(temp) == abs(h->heap[child]) && temp <= h->heap[child]) // temp <= 부등호가 들어가도되는지 생각해보세요
+        if (child < h->heapSize && abs(h->heap[child] == abs(h->heap[child+1])) && h->heap[child] > h->heap[child+1])
+        {
+            child++;
+        }
+
+        // 마지막수의 절대값보다 자식의 값이 더 작거나 같다면 반복문 탈출
+        if (abs(temp) < abs(h->heap[child]))
+        {
             break;
-        else if (abs(temp) < abs(h->heap[child]))
+        }
+
+        if (abs(temp) == abs(h->heap[child]) && temp <= h->heap[child]){
             break;
+        }
+
         h->heap[parent] = h->heap[child];
         parent = child;
         child *= 2;
@@ -117,7 +118,7 @@ int main()
             push(h, enter);
             break;
         }
-        // printHeap(h);
+        printHeap(h);
     }
     return 0;
 }
