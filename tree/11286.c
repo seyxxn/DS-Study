@@ -75,7 +75,7 @@ void pop(heapType *h)
             }
         }
 
-        if (abs(temp) == abs(h->heap[child]) && temp < h->heap[child])
+        if (abs(temp) == abs(h->heap[child]) && temp <= h->heap[child]) // temp <= 부등호가 들어가도되는지 생각해보세요
             break;
         else if (abs(temp) < abs(h->heap[child]))
             break;
