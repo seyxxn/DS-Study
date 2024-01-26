@@ -241,10 +241,10 @@ int eval()
             case 4:
                 evalPush(op1 * op2);
                 break;
-            case divide:
+            case 5:
                 evalPush(op1 / op2);
                 break;
-            case mod:
+            case 6:
                 evalPush(op1 % op2);
             }
         }
