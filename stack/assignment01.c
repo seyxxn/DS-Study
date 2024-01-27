@@ -14,7 +14,7 @@ typedef struct Node
 
 typedef struct Stack
 {
-    Node *top; // ìŠ¤íƒì˜ topì„ ë‚˜íƒ€ë‚´ëŠ” í¬ì¸í„°
+    Node *top; // ½ºÅÃÀÇ topÀ» ³ªÅ¸³»´Â Æ÷ÀÎÅÍ
     int size;
 } Stack;
 
@@ -27,52 +27,57 @@ typedef enum _precedence
     times,
     divide,
     mod,
-    power, // ^ (ì œê³±)
+    power, // ^ (Á¦°ö)
     eos,
     operand
 } precedence;
 
-char expr[MAX_EXPR_SIZE];      // ì‚¬ìš©ìžì—ê²Œ í‘œê¸°ì‹ì„ ìž…ë ¥ë°›ëŠ” ë³€ìˆ˜
-char exprToken[MAX_EXPR_SIZE]; // ì‚¬ìš©ìžì—ê²Œ í‘œê¸°ì‹ì„ ìž…ë ¥ë°›ì•„ í† í°ì„ êµ¬ë¶„í•˜ì—¬ ë„£ìŒ
-Stack exprInStack;             // ì‚¬ìš©ìžì—ê²Œ ë°›ì€ ë¬¸ìžì—´ì„ ì‚½ìž…í•œ ìŠ¤íƒ ì„ ì–¸
-Stack exprInStackOrigin;       // ì‚¬ìš©ìžì—ê²Œ ë°›ì€ ë¬¸ìžì—´ì„ ì‚½ìž…í•œ ìŠ¤íƒ -> ìˆœíšŒí•˜ê¸° ìœ„í•´ ë§Œë“  ìŠ¤íƒ
-int continueCheck = 1;         // ì‚¬ìš©ìžì—ê²Œ ìž…ë ¥ì„ ê³„ì† ë°›ëŠ” ê²ƒì„ ì œì–´í•˜ëŠ” ë³€ìˆ˜
-int typeCheck[3] = {0, 0, 0};  // ìˆœì„œëŒ€ë¡œ, ì „ìœ„ ì¤‘ìœ„ í›„ìœ„ í‘œí˜„ë²• (í‘œí˜„ë²•ì— í•´ë‹¹í•˜ë©´ 1, í•´ë‹¹í•˜ì§€ ì•Šìœ¼ë©´ 0)
-                               // -> ìˆ˜ì‹ ë°”ë€” ë•Œ ë§ˆë‹¤ ì´ˆê¸°í™” í•„ìš”
+char expr[MAX_EXPR_SIZE];      // »ç¿ëÀÚ¿¡°Ô Ç¥±â½ÄÀ» ÀÔ·Â¹Þ´Â º¯¼ö
+char exprToken[MAX_EXPR_SIZE]; // »ç¿ëÀÚ¿¡°Ô Ç¥±â½ÄÀ» ÀÔ·Â¹Þ¾Æ ÅäÅ«À» ±¸ºÐÇÏ¿© ³ÖÀ½
+Stack exprInStack;             // »ç¿ëÀÚ¿¡°Ô ¹ÞÀº ¹®ÀÚ¿­À» »ðÀÔÇÑ ½ºÅÃ ¼±¾ð
+Stack exprInStackOrigin;       // »ç¿ëÀÚ¿¡°Ô ¹ÞÀº ¹®ÀÚ¿­À» »ðÀÔÇÑ ½ºÅÃ -> ¼øÈ¸ÇÏ±â À§ÇØ ¸¸µç ½ºÅÃ
+int continueCheck = 1;         // »ç¿ëÀÚ¿¡°Ô ÀÔ·ÂÀ» °è¼Ó ¹Þ´Â °ÍÀ» Á¦¾îÇÏ´Â º¯¼ö
+int typeCheck[3] = {0, 0, 0};  // ¼ø¼­´ë·Î, ÀüÀ§ ÁßÀ§ ÈÄÀ§ Ç¥Çö¹ý (Ç¥Çö¹ý¿¡ ÇØ´çÇÏ¸é 1, ÇØ´çÇÏÁö ¾ÊÀ¸¸é 0)
+                               // -> ¼ö½Ä ¹Ù²ð ¶§ ¸¶´Ù ÃÊ±âÈ­ ÇÊ¿ä
 
-// ìš°ì„ ìˆœìœ„
+// ¿ì¼±¼øÀ§
+// (, ), +, -, *, /, %, ^, eos ¼ø¼­
 int isp[] = {0, 17, 12, 12, 13, 13, 13, 15, 0};
 int icp[] = {20, 27, 12, 12, 13, 13, 13, 15, 0};
 
-void execute(); // ì‹¤í–‰í•˜ëŠ” í•¨ìˆ˜ ë”°ë¡œ ëºŒ
+void execute(); // ½ÇÇàÇÏ´Â ÇÔ¼ö µû·Î »­
 
-void initialize(Stack *stack);       // ìŠ¤íƒ ì´ˆê¸°í™” í•¨ìˆ˜
-int isEmpty(Stack *stack);           // ìŠ¤íƒì´ ë¹„ì—ˆëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
-void push(Stack *stack, char *data); // ìŠ¤íƒì— ìƒˆë¡œìš´ ë…¸ë“œë¥¼ ì‚½ìž…í•˜ëŠ” í•¨ìˆ˜
-char *pop(Stack *stack);             // ìŠ¤íƒ ì¶”ì¶œ í•¨ìˆ˜
-char *top(Stack *stack);             // ê°€ìž¥ ë§¨ ìœ„ ì›ì†Œ ì¶”ì¶œ í•¨ìˆ˜
+void initialize(Stack *stack);       // ½ºÅÃ ÃÊ±âÈ­ ÇÔ¼ö
+int isEmpty(Stack *stack);           // ½ºÅÃÀÌ ºñ¾ú´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö
+void push(Stack *stack, char *data); // ½ºÅÃ¿¡ »õ·Î¿î ³ëµå¸¦ »ðÀÔÇÏ´Â ÇÔ¼ö
+char *pop(Stack *stack);             // ½ºÅÃ ÃßÃâ ÇÔ¼ö
+char *top(Stack *stack);             // °¡Àå ¸Ç À§ ¿ø¼Ò ÃßÃâ ÇÔ¼ö
 
-void getTokenToStack(char *expr, Stack *stack); // ë¬¸ìžì—´í˜•íƒœë¡œ ìž…ë ¥ë°›ì€ ìˆ˜ì‹ì„ ë¶„ë¦¬í•˜ì—¬ ìŠ¤íƒì— ì €ìž¥í•´ì•¼í•¨
-void printStack(Stack *stack);                  // ìŠ¤íƒ í™•ì¸ìš© ì¶œë ¥ í•¨ìˆ˜
-int isNumber(char *str);                        //  ìˆ«ìžì¸ì§€ ì•„ë‹Œì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
-int errorCheck(Stack *stack);                   // í† í° ì˜¤ìž…ë ¥ ì˜ˆì™¸ì²˜ë¦¬ í•¨ìˆ˜
-void expressionType(Stack *stack);              // ì „ìœ„ì¸ì§€ ì¤‘ìœ„ì¸ì§€ í›„ìœ„ì¸ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
+void getTokenToStack(char *expr, Stack *stack); // ¹®ÀÚ¿­ÇüÅÂ·Î ÀÔ·Â¹ÞÀº ¼ö½ÄÀ» ºÐ¸®ÇÏ¿© ½ºÅÃ¿¡ ÀúÀåÇØ¾ßÇÔ
+void printStack(Stack *stack);                  // ½ºÅÃ È®ÀÎ¿ë Ãâ·Â ÇÔ¼ö
+int isNumber(char *str);                        //  ¼ýÀÚÀÎÁö ¾Æ´ÑÁö È®ÀÎÇÏ´Â ÇÔ¼ö
+int errorCheck(Stack *stack);                   // ÅäÅ« ¿ÀÀÔ·Â ¿¹¿ÜÃ³¸® ÇÔ¼ö
+void expressionType(Stack *stack);              // ÀüÀ§ÀÎÁö ÁßÀ§ÀÎÁö ÈÄÀ§ÀÎÁö È®ÀÎÇÏ´Â ÇÔ¼ö
 
-// ì¤‘ìœ„-> í›„ìœ„, ì¤‘ìœ„->ì „ìœ„, í›„ìœ„->ì¤‘ìœ„, ì „ìœ„ ->ì¤‘ìœ„ (ë³€í™˜í•¨ìˆ˜ 4ê°œ í•„ìš”)
-void printToken(char *token);
-char getToken(char *symbol);
-void infixToPostfix(); // ì¤‘ìœ„->í›„ìœ„
+// ÁßÀ§-> ÈÄÀ§, ÁßÀ§->ÀüÀ§, ÈÄÀ§->ÁßÀ§, ÀüÀ§ ->ÁßÀ§ (º¯È¯ÇÔ¼ö 4°³ ÇÊ¿ä)
+void printToken(precedence token); // Åä±ÙÀÇ ÀÎµ¦½º¸¦ ÀÎÀÚ·Î ¹Þ¾Æ, ÈÄÀ§Ç¥±â½Ä ¹®ÀÚ¿­¿¡ ¹®ÀÚ¸¦ Ãß°¡ÇÏ´Â ÇÔ¼ö
+precedence getToken(char *symbol); 
+void infixToPostfix(); // ÁßÀ§->ÈÄÀ§
+
+void expressionPush(Stack *stack, precedence item);
+precedence expresstionPop(Stack *stack);
+
 char postexpr[MAX_EXPR_SIZE] = {
     0,
-};                            // í›„ìœ„í‘œê¸°ì‹ì„ ì €ìž¥í•˜ëŠ” ë°°ì—´ ë³€ìˆ˜
-char *postfixExpr = postexpr; //   í›„ìœ„í‘œê¸°ì‹ì„ ê°€ë¦¬í‚¤ê³  ìžˆëŠ” í¬ì¸í„°ë³€ìˆ˜
+};                            // ÈÄÀ§Ç¥±â½ÄÀ» ÀúÀåÇÏ´Â ¹è¿­ º¯¼ö
+char *postfixExpr = postexpr; //   ÈÄÀ§Ç¥±â½ÄÀ» °¡¸®Å°°í ÀÖ´Â Æ÷ÀÎÅÍº¯¼ö
 
 int main(int argc, char *argv[])
 {
     initialize(&exprInStack);
     initialize(&exprInStackOrigin);
 
-    if (argc == 1) // í”„ë¡œê·¸ëž¨ ì‹¤í–‰ í›„ ìˆ˜ì‹ìž…ë ¥ ë°›ëŠ” ê²½ìš°
+    if (argc == 1) // ÇÁ·Î±×·¥ ½ÇÇà ÈÄ ¼ö½ÄÀÔ·Â ¹Þ´Â °æ¿ì
     {
         while (continueCheck)
         {
@@ -94,14 +99,14 @@ int main(int argc, char *argv[])
             {
                 execute();
             }
-            // stackì„ ì´ˆê¸°í™”
+            // stackÀ» ÃÊ±âÈ­
             initialize(&exprInStack);
             typeCheck[0] = 0;
             typeCheck[1] = 0;
             typeCheck[2] = 0;
         }
     }
-    else if (argc == 2) // ëª…ë ¹í–‰ ì¸ìžë¡œ ìˆ˜ì‹ ìž…ë ¥ë°›ì€ ê²½ìš° -> í•˜ë‚˜ì˜ ìˆ˜ì‹ ë¶„ì„ í›„ì— í”„ë¡œê·¸ëž¨ ì¢…ë£Œ
+    else if (argc == 2) // ¸í·ÉÇà ÀÎÀÚ·Î ¼ö½Ä ÀÔ·Â¹ÞÀº °æ¿ì -> ÇÏ³ªÀÇ ¼ö½Ä ºÐ¼® ÈÄ¿¡ ÇÁ·Î±×·¥ Á¾·á
     {
         strcpy(expr, argv[1]);
         execute();
@@ -110,11 +115,11 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-// ì‹¤í–‰í•¨ìˆ˜
+// ½ÇÇàÇÔ¼ö
 void execute()
 {
     getTokenToStack(expr, &exprInStack);
-    // ìƒˆë¡œìš´ ìŠ¤íƒì„ ë§Œë“¤ì–´ì„œ exprInStackì˜ ë‚´ìš©ì„ ë³µì‚¬
+    // »õ·Î¿î ½ºÅÃÀ» ¸¸µé¾î¼­ exprInStackÀÇ ³»¿ëÀ» º¹»ç
     Stack tempStack;
     initialize(&tempStack);
 
@@ -123,7 +128,7 @@ void execute()
         push(&tempStack, pop(&exprInStack));
     }
 
-    // tempStackì˜ ë‚´ìš©ì„ exprInStackê³¼ exprInStackOriginì— ë³µì‚¬
+    // tempStackÀÇ ³»¿ëÀ» exprInStack°ú exprInStackOrigin¿¡ º¹»ç
     while (!isEmpty(&tempStack))
     {
         char *data = pop(&tempStack);
@@ -146,7 +151,7 @@ void execute()
     if (typeCheck[1])
     {
         printf("possible\n");
-        infixToPostfix(); // ì¼ë‹¨ ìž„ì‹œë¡œ ì—¬ê¸°ì„œ í…ŒìŠ¤íŠ¸
+        infixToPostfix(); // ÀÏ´Ü ÀÓ½Ã·Î ¿©±â¼­ Å×½ºÆ®
         printf("%s\n", postfixExpr);
     }
     else
@@ -185,17 +190,17 @@ int isEmpty(Stack *stack)
     return (stack->top == NULL);
 }
 
-// ìŠ¤íƒì— ìƒˆë¡œìš´ ë…¸ë“œë¥¼ ì‚½ìž…í•˜ëŠ” í•¨ìˆ˜
+// ½ºÅÃ¿¡ »õ·Î¿î ³ëµå¸¦ »ðÀÔÇÏ´Â ÇÔ¼ö
 void push(Stack *stack, char *data)
 {
-    Node *temp = (Node *)malloc(sizeof(Node)); // ë…¸ë“œ ìƒì„±
-    strcpy(temp->data, data);                  // ìŠ¤íŠ¸ë§ ë³µì‚¬í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬ dataê°’ì„ temp->dataì— ë³µì‚¬
-    temp->next = stack->top;                   // ë…¸ë“œì˜ ë‹¤ìŒ í¬ì¸í„°ê°€ stackì˜ topì„ ê°€ë¦¬í‚¤ê²Œ
-    stack->top = temp;                         // ìµœê·¼ì— ë„£ì€ ë…¸ë“œë¥¼ topìœ¼ë¡œ ì„¤ì •í•¨(Stackì˜ ì„±ì§ˆ)
+    Node *temp = (Node *)malloc(sizeof(Node)); // ³ëµå »ý¼º
+    strcpy(temp->data, data);                  // ½ºÆ®¸µ º¹»çÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿© data°ªÀ» temp->data¿¡ º¹»ç
+    temp->next = stack->top;                   // ³ëµåÀÇ ´ÙÀ½ Æ÷ÀÎÅÍ°¡ stackÀÇ topÀ» °¡¸®Å°°Ô
+    stack->top = temp;                         // ÃÖ±Ù¿¡ ³ÖÀº ³ëµå¸¦ topÀ¸·Î ¼³Á¤ÇÔ(StackÀÇ ¼ºÁú)
     stack->size = stack->size + 1;
 }
 
-// topì„ ìŠ¤íƒì—ì„œ ì¶”ì¶œí•˜ê³  ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜
+// topÀ» ½ºÅÃ¿¡¼­ ÃßÃâÇÏ°í ¹ÝÈ¯ÇÏ´Â ÇÔ¼ö
 char *pop(Stack *stack)
 {
     if (isEmpty(stack))
@@ -222,7 +227,7 @@ char *top(Stack *stack)
     return stack->top->data;
 }
 
-// ë¬¸ìžì—´ì„ í† í°ìœ¼ë¡œ ìª¼ê°œì„œ ìŠ¤íƒì— pushí•˜ëŠ” í•¨ìˆ˜
+// ¹®ÀÚ¿­À» ÅäÅ«À¸·Î ÂÉ°³¼­ ½ºÅÃ¿¡ pushÇÏ´Â ÇÔ¼ö
 void getTokenToStack(char *expr, Stack *stack)
 {
     char *ptr = strtok(expr, " \t");
@@ -233,7 +238,7 @@ void getTokenToStack(char *expr, Stack *stack)
     }
 }
 
-// ìŠ¤íƒ ì¶œë ¥í•˜ëŠ” í•¨ìˆ˜
+// ½ºÅÃ Ãâ·ÂÇÏ´Â ÇÔ¼ö
 void printStack(Stack *stack)
 {
     for (Node *p = stack->top; p != NULL; p = p->next)
@@ -242,36 +247,36 @@ void printStack(Stack *stack)
     printf("size : %d\n", stack->size);
 }
 
-// ë¬¸ìžì—´ì´ ìˆ«ìžê°€ ë§žëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
+// ¹®ÀÚ¿­ÀÌ ¼ýÀÚ°¡ ¸Â´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö
 int isNumber(char *str)
 {
-    int dotCnt = 0; // ì†Œìˆ˜ì ì˜ ê°œìˆ˜ë¥¼ ì„¸ëŠ” ë³€ìˆ˜
+    int dotCnt = 0; // ¼Ò¼öÁ¡ÀÇ °³¼ö¸¦ ¼¼´Â º¯¼ö
 
     if (*str == '-')
     {
-        str++; // '-'ë¥¼ ë¬´ì‹œí•˜ê³  ë‹¤ìŒ ë¬¸ìžë¡œ ì´ë™
+        str++; // '-'¸¦ ¹«½ÃÇÏ°í ´ÙÀ½ ¹®ÀÚ·Î ÀÌµ¿
     }
 
     while (*str)
     {
         if (!isdigit(*str) && *str != '.')
-        // ìˆ«ìžê°€ ì•„ë‹ˆê³  ì†Œìˆ˜ì ì´ ì•„ë‹Œ ê²ƒì´ ë“¤ì–´ì˜¤ë©´ 0 ë°˜í™˜
+        // ¼ýÀÚ°¡ ¾Æ´Ï°í ¼Ò¼öÁ¡ÀÌ ¾Æ´Ñ °ÍÀÌ µé¾î¿À¸é 0 ¹ÝÈ¯
         {
             return 0;
         }
-        // ì†Œìˆ˜ì ì´ ë“¤ì–´ì˜¤ê²Œ ë˜ë©´ ì†Œìˆ˜ì  ì¹´ìš´íŠ¸
+        // ¼Ò¼öÁ¡ÀÌ µé¾î¿À°Ô µÇ¸é ¼Ò¼öÁ¡ Ä«¿îÆ®
         if (*str == '.')
         {
             dotCnt++;
-            if (dotCnt > 1) // ì†Œìˆ˜ì ì´ 1ê°œë³´ë‹¤ ë§Žìœ¼ë©´ ìˆ«ìžê°€ ì•„ë‹˜ -> 0ì„ ë°˜í™˜
+            if (dotCnt > 1) // ¼Ò¼öÁ¡ÀÌ 1°³º¸´Ù ¸¹À¸¸é ¼ýÀÚ°¡ ¾Æ´Ô -> 0À» ¹ÝÈ¯
                 return 0;
         }
         str++;
     }
-    return 1; // ëª¨ë“  ê²€ì‚¬ë¥¼ ë§ˆì³ ìˆ«ìžìž„ì„ í™•ì¸í•˜ê³  1ì„ ë°˜í™˜
+    return 1; // ¸ðµç °Ë»ç¸¦ ¸¶ÃÄ ¼ýÀÚÀÓÀ» È®ÀÎÇÏ°í 1À» ¹ÝÈ¯
 }
 
-// í† í° ì˜¤ìž…ë ¥ ì˜ˆì™¸ì²˜ë¦¬ í•¨ìˆ˜-> ì˜ˆì™¸ ì²˜ë¦¬í•´ì•¼í•˜ë©´ 1ì„ ë°˜í™˜, ì˜ˆì™¸ì²˜ë¦¬ ì•ˆí•´ë„ ë˜ë©´ 0ì„ ë°˜í™˜
+// ÅäÅ« ¿ÀÀÔ·Â ¿¹¿ÜÃ³¸® ÇÔ¼ö-> ¿¹¿Ü Ã³¸®ÇØ¾ßÇÏ¸é 1À» ¹ÝÈ¯, ¿¹¿ÜÃ³¸® ¾ÈÇØµµ µÇ¸é 0À» ¹ÝÈ¯
 int errorCheck(Stack *stack)
 {
     for (Node *p = stack->top; p != NULL; p = p->next)
@@ -291,13 +296,13 @@ int errorCheck(Stack *stack)
     return 0;
 }
 
-// ì „ìœ„ì¸ì§€ ì¤‘ìœ„ì¸ì§€ í›„ìœ„ì¸ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
-// typeCheck ë°°ì—´ ë³€ìˆ˜ë¥¼ ì¡°ì •í•¨
+// ÀüÀ§ÀÎÁö ÁßÀ§ÀÎÁö ÈÄÀ§ÀÎÁö È®ÀÎÇÏ´Â ÇÔ¼ö
+// typeCheck ¹è¿­ º¯¼ö¸¦ Á¶Á¤ÇÔ
 void expressionType(Stack *stack)
 {
-    if (stack->size == 1) // stackì˜ í¬ê¸°ê°€ 1ì¼ë•Œ
+    if (stack->size == 1) // stackÀÇ Å©±â°¡ 1ÀÏ¶§
     {
-        if (isdigit(top(stack)[0])) // ê·¸ê²Œ ìˆ«ìžì¸ ê²½ìš°
+        if (isdigit(top(stack)[0])) // ±×°Ô ¼ýÀÚÀÎ °æ¿ì
         {
             typeCheck[0] = 1;
             typeCheck[1] = 1;
@@ -305,14 +310,14 @@ void expressionType(Stack *stack)
             return;
         }
         else
-        {                                                                  // ìˆ«ìžê°€ ì•„ë‹Œê²½ìš°
-            printf("error : ìž˜ëª»ëœ ìž…ë ¥ (ìž…ë ¥ì´ 1ê°œì¸ë° ì—°ì‚°ìžì¸ê²½ìš°)\n"); // ìž„ì˜ë¡œ ì—ëŸ¬ì²˜ë¦¬ (ëª…ì„¸ì—ëŠ” ì—†ìŒ)
+        {                                                                  // ¼ýÀÚ°¡ ¾Æ´Ñ°æ¿ì
+            printf("error : Àß¸øµÈ ÀÔ·Â (ÀÔ·ÂÀÌ 1°³ÀÎµ¥ ¿¬»êÀÚÀÎ°æ¿ì)\n"); // ÀÓÀÇ·Î ¿¡·¯Ã³¸® (¸í¼¼¿¡´Â ¾øÀ½)
             return;
         }
     }
-    else if (stack->size == 2) // stackì˜ í¬ê¸°ê°€ 2ì¼ë•Œ
+    else if (stack->size == 2) // stackÀÇ Å©±â°¡ 2ÀÏ¶§
     {
-        printf("error : ìž˜ëª»ëœ ìž…ë ¥ (ìž…ë ¥ì´ 2ê°œì¼ ë•Œ)\n");
+        printf("error : Àß¸øµÈ ÀÔ·Â (ÀÔ·ÂÀÌ 2°³ÀÏ ¶§)\n");
         return;
     }
     else
@@ -326,25 +331,25 @@ void expressionType(Stack *stack)
         char firstData[MAX_EXPR_SIZE];
         strcpy(firstData, pop(stack));
 
-        //  ì²«ë²ˆì§¸ê°€ ê´„í˜¸ë¼ë©´ -> ì¤‘ìœ„
+        //  Ã¹¹øÂ°°¡ °ýÈ£¶ó¸é -> ÁßÀ§
         if (firstData[0] == '(')
         {
             typeCheck[1] = 1;
             // printf("first : %s secod : %s \n", firstData, secondData);
         }
-        // ì²«ë²ˆì§¸ê°€ ì—°ì‚°ìžë¼ë©´ -> ì „ìœ„
+        // Ã¹¹øÂ°°¡ ¿¬»êÀÚ¶ó¸é -> ÀüÀ§
         else if (strchr("+-*/%^", firstData[0]) != NULL)
         {
             typeCheck[0] = 1;
             // printf("first : %s secod : %s \n", firstData, secondData);
         }
-        // ì²«ë²ˆì§¸ì™€ ë‘ë²ˆì§¸ ê°’ì´ ëª¨ë‘ ìˆ«ìžë¼ë©´ -> í›„ìœ„
+        // Ã¹¹øÂ°¿Í µÎ¹øÂ° °ªÀÌ ¸ðµÎ ¼ýÀÚ¶ó¸é -> ÈÄÀ§
         else if (isNumber(firstData) && isNumber(secondData))
         {
             typeCheck[2] = 1;
             // printf("first : %s secod : %s \n", firstData, secondData);
         }
-        // ì²«ë²ˆì§¸ê°€ ìˆ«ìžê³ , ë‘ë²ˆì§¸ê°€ ì—°ì‚°ìžë¼ë©´ -> ì¤‘ìœ„
+        // Ã¹¹øÂ°°¡ ¼ýÀÚ°í, µÎ¹øÂ°°¡ ¿¬»êÀÚ¶ó¸é -> ÁßÀ§
         else if (isNumber(firstData) && strchr("+-*/%^", secondData[0]) != NULL)
         {
             typeCheck[1] = 1;
@@ -355,16 +360,70 @@ void expressionType(Stack *stack)
     }
 }
 
-char getToken(char *symbol)
+void expressionPush(Stack *stack, precedence item){
+    Node *temp = (Node *)malloc(sizeof(Node));
+    
+    switch (item) {
+        case lparen:
+            strcpy(temp->data, "(");
+            break;
+        case rparen:
+            strcpy(temp->data, ")");
+            break;
+        case plus:
+            strcpy(temp->data, "+");
+            break;
+        case minus:
+            strcpy(temp->data, "-");
+            break;
+        case times:
+            strcpy(temp->data, "*");
+            break;
+        case divide:
+            strcpy(temp->data, "/");
+            break;
+        case mod:
+            strcpy(temp->data, "%");
+            break;
+        case power:
+            strcpy(temp->data, "^");
+            break;
+        case eos:
+            strcpy(temp->data, "\0");
+            break;
+        case operand:
+            break;
+    }
+
+    temp->next = stack->top;
+    stack->top = temp;
+    stack->size = stack->size + 1;
+}
+
+
+precedence expresstionPop(Stack *stack){
+    if (isEmpty(stack))
+    {
+        fprintf(stderr, "Stack Underflow");
+        exit(EXIT_FAILURE);
+    }
+    Node *temp = stack->top;
+    stack->top = stack->top->next;
+    stack->size = stack->size - 1;
+    precedence data = getToken(temp->data);
+    free(temp);
+    return data;
+}
+
+precedence getToken(char *symbol)
 {
     if (isEmpty(&exprInStackOrigin))
     {
-        printf("ë¹”\n");
+        printf("ºö\n");
         return eos;
     }
 
     strcpy(symbol, exprInStackOrigin.top->data);
-    exprInStackOrigin.top = exprInStackOrigin.top->next;
 
     switch (symbol[0])
     {
@@ -376,10 +435,10 @@ char getToken(char *symbol)
         return plus;
     case '-':
         return minus;
-    case '/':
-        return divide;
     case '*':
         return times;
+    case '/':
+        return divide;
     case '%':
         return mod;
     case '^':
@@ -391,26 +450,27 @@ char getToken(char *symbol)
     }
 }
 
-void printToken(char *token)
+
+void printToken(precedence token)
 {
-    switch (token[0])
+    switch (token)
     {
-    case 2:
+    case plus:
         *postfixExpr++ = '+';
         break;
-    case 3:
+    case minus:
         *postfixExpr++ = '-';
         break;
-    case 4:
+    case times:
         *postfixExpr++ = '*';
         break;
-    case 5:
+    case divide:
         *postfixExpr++ = '/';
         break;
-    case 6:
+    case mod:
         *postfixExpr++ = '%';
         break;
-    case 7:
+    case power:
         *postfixExpr++ = '^';
         break;
     }
@@ -423,33 +483,34 @@ void infixToPostfix()
 
     printStack(&exprInStackOrigin);
 
-    push(&exprInStackOrigin, '\0');
+    expressionPush(&exprInStackOrigin, eos);
 
     printStack(&exprInStackOrigin);
 
-    for (token = getToken(symbol); token != '\0'; token = getToken(symbol))
+    for (token = getToken(symbol); token != eos; token = getToken(symbol))
     {
-        if (token == operand) // í”¼ì—°ì‚°ìžë¼ë©´
+        if (token == operand) // ÇÇ¿¬»êÀÚ¶ó¸é
         {
-            *postfixExpr++ = symbol[0]; // ë¬¸ìžì—´ì— ì¶”ê°€
+            *postfixExpr++ = symbol[0]; // ¹®ÀÚ¿­¿¡ Ãß°¡
         }
-        else if (token == rparen) // ì˜¤ë¥¸ìª½ ê´„í˜¸ë¼ë©´
+        else if (token == rparen) // ¿À¸¥ÂÊ °ýÈ£¶ó¸é
         {
-            while (getToken(symbol) != lparen)       // ì™¼ìª½ê´„í˜¸ê°€ ë‚˜ì˜¬ ë•Œê¹Œì§€
-                printToken(pop(&exprInStackOrigin)); // pop í•˜ì—¬ ì¶œë ¥
-            pop(&exprInStackOrigin);                 // ì™¼ìª½ ê´„í˜¸ëŠ” ì¶œë ¥í•˜ì§€ ì•Šê³  pop
+            while (getToken(symbol) != lparen)       // ¿ÞÂÊ°ýÈ£°¡ ³ª¿Ã ¶§±îÁö
+                printToken(expresstionPop(&exprInStackOrigin)); // pop ÇÏ¿© Ãâ·Â
+            expresstionPop(&exprInStackOrigin);                 // ¿ÞÂÊ °ýÈ£´Â Ãâ·ÂÇÏÁö ¾Ê°í pop
         }
-        else // ì´ì™¸ì˜ ì—°ì‚°ìžë¼ë©´
+        else // ÀÌ¿ÜÀÇ ¿¬»êÀÚ¶ó¸é
         {
             precedence stackTop = getToken(top(&exprInStackOrigin));
             while (isp[stackTop] >= icp[token])
-                printToken(pop(&exprInStackOrigin));
-            push(&exprInStackOrigin, token);
+                printToken(expresstionPop(&exprInStackOrigin));
+            expressionPush(&exprInStackOrigin, token);
         }
     }
 
-    while ((token = pop(&exprInStackOrigin)) != eos)
+    while ((token = expresstionPop(&exprInStackOrigin)) != eos)
         printToken(token);
 
-    *postfixExpr = '\0';
+    // *postfixExpr = '\0';
+    printf("PO : %s\n", postfixExpr);
 }
