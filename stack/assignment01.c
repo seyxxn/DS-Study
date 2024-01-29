@@ -61,7 +61,7 @@ void expressionType(Stack *stack);              // 전위인지 중위인지 후위인지 확
 
 // 중위-> 후위, 중위->전위, 후위->중위, 전위 ->중위 (변환함수 4개 필요)
 void printToken(precedence token); // 토근의 인덱스를 인자로 받아, 후위표기식 문자열에 문자를 추가하는 함수
-precedence getToken(char *symbol); 
+precedence getToken(Stack *stack, char *symbol);
 void infixToPostfix(); // 중위->후위
 
 void expressionPush(Stack *stack, precedence item);
@@ -310,14 +310,14 @@ void expressionType(Stack *stack)
             return;
         }
         else
-        {                                                                  // 숫자가 아닌경우
-            printf("error : 잘못된 입력 (입력이 1개인데 연산자인경우)\n"); // 임의로 에러처리 (명세에는 없음)
+        {                                        // 숫자가 아닌경우
+            printf("error : input is single\n"); // 임의로 에러처리 (명세에는 없음)
             return;
         }
     }
     else if (stack->size == 2) // stack의 크기가 2일때
     {
-        printf("error : 잘못된 입력 (입력이 2개일 때)\n");
+        printf("error : input is two\n");
         return;
     }
     else
@@ -360,39 +360,41 @@ void expressionType(Stack *stack)
     }
 }
 
-void expressionPush(Stack *stack, precedence item){
+void expressionPush(Stack *stack, precedence item)
+{
     Node *temp = (Node *)malloc(sizeof(Node));
-    
-    switch (item) {
-        case lparen:
-            strcpy(temp->data, "(");
-            break;
-        case rparen:
-            strcpy(temp->data, ")");
-            break;
-        case plus:
-            strcpy(temp->data, "+");
-            break;
-        case minus:
-            strcpy(temp->data, "-");
-            break;
-        case times:
-            strcpy(temp->data, "*");
-            break;
-        case divide:
-            strcpy(temp->data, "/");
-            break;
-        case mod:
-            strcpy(temp->data, "%");
-            break;
-        case power:
-            strcpy(temp->data, "^");
-            break;
-        case eos:
-            strcpy(temp->data, "\0");
-            break;
-        case operand:
-            break;
+
+    switch (item)
+    {
+    case lparen:
+        strcpy(temp->data, "(");
+        break;
+    case rparen:
+        strcpy(temp->data, ")");
+        break;
+    case plus:
+        strcpy(temp->data, "+");
+        break;
+    case minus:
+        strcpy(temp->data, "-");
+        break;
+    case times:
+        strcpy(temp->data, "*");
+        break;
+    case divide:
+        strcpy(temp->data, "/");
+        break;
+    case mod:
+        strcpy(temp->data, "%");
+        break;
+    case power:
+        strcpy(temp->data, "^");
+        break;
+    case eos:
+        strcpy(temp->data, "\0");
+        break;
+    case operand:
+        break;
     }
 
     temp->next = stack->top;
@@ -400,30 +402,29 @@ void expressionPush(Stack *stack, precedence item){
     stack->size = stack->size + 1;
 }
 
-
-precedence expresstionPop(Stack *stack){
+precedence expresstionPop(Stack *stack)
+{
     if (isEmpty(stack))
     {
         fprintf(stderr, "Stack Underflow");
         exit(EXIT_FAILURE);
     }
+
     Node *temp = stack->top;
     stack->top = stack->top->next;
     stack->size = stack->size - 1;
-    precedence data = getToken(temp->data);
+    precedence data = getToken(stack, temp->data);
     free(temp);
     return data;
 }
 
-precedence getToken(char *symbol)
+precedence getToken(Stack *stack, char *symbol)
 {
-    if (isEmpty(&exprInStackOrigin))
+    if (isEmpty(stack))
     {
-        printf("빔\n");
+        printf("empty\n");
         return eos;
     }
-
-    strcpy(symbol, exprInStackOrigin.top->data);
 
     switch (symbol[0])
     {
@@ -450,7 +451,6 @@ precedence getToken(char *symbol)
     }
 }
 
-
 void printToken(precedence token)
 {
     switch (token)
@@ -473,6 +473,8 @@ void printToken(precedence token)
     case power:
         *postfixExpr++ = '^';
         break;
+    default:
+        break;
     }
 }
 
@@ -483,11 +485,10 @@ void infixToPostfix()
 
     printStack(&exprInStackOrigin);
 
-    expressionPush(&exprInStackOrigin, eos);
+    // expressionPush(&exprInStackOrigin, eos);
+    // printStack(&exprInStackOrigin);
 
-    printStack(&exprInStackOrigin);
-
-    for (token = getToken(symbol); token != eos; token = getToken(symbol))
+    for (token = getToken(&exprInStackOrigin, symbol); token != eos; token = getToken(&exprInStackOrigin, symbol))
     {
         if (token == operand) // 피연산자라면
         {
@@ -495,13 +496,13 @@ void infixToPostfix()
         }
         else if (token == rparen) // 오른쪽 괄호라면
         {
-            while (getToken(symbol) != lparen)       // 왼쪽괄호가 나올 때까지
-                printToken(expresstionPop(&exprInStackOrigin)); // pop 하여 출력
-            expresstionPop(&exprInStackOrigin);                 // 왼쪽 괄호는 출력하지 않고 pop
+            while (getToken(&exprInStackOrigin, symbol) != lparen) // 왼쪽괄호가 나올 때까지
+                printToken(expresstionPop(&exprInStackOrigin));    // pop 하여 출력
+            expresstionPop(&exprInStackOrigin);                    // 왼쪽 괄호는 출력하지 않고 pop
         }
         else // 이외의 연산자라면
         {
-            precedence stackTop = getToken(top(&exprInStackOrigin));
+            precedence stackTop = getToken(&exprInStackOrigin, top(&exprInStackOrigin));
             while (isp[stackTop] >= icp[token])
                 printToken(expresstionPop(&exprInStackOrigin));
             expressionPush(&exprInStackOrigin, token);
