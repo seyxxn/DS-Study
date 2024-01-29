@@ -67,6 +67,10 @@ void infixToPostfix(); // 중위->후위
 void expressionPush(Stack *stack, precedence item);
 precedence expresstionPop(Stack *stack);
 
+char *infixExpr[MAX_EXPR_SIZE] = {
+    0,
+};
+int infixExprLen = 0;
 char postexpr[MAX_EXPR_SIZE] = {
     0,
 };                            // 후위표기식을 저장하는 배열 변수
@@ -134,6 +138,7 @@ void execute()
         char *data = pop(&tempStack);
         push(&exprInStack, data);
         push(&exprInStackOrigin, data);
+        infixExpr[infixExprLen++] = data;
     }
 
     // printStack(&exprInStack);
@@ -153,6 +158,8 @@ void execute()
         printf("possible\n");
         infixToPostfix(); // 일단 임시로 여기서 테스트
         printf("%s\n", postfixExpr);
+        memset(infixExpr, 0, infixExprLen);
+        infixExprLen = 0;
     }
     else
     {
@@ -343,16 +350,16 @@ void expressionType(Stack *stack)
             typeCheck[0] = 1;
             // printf("first : %s secod : %s \n", firstData, secondData);
         }
-        // 첫번째와 두번째 값이 모두 숫자라면 -> 후위
-        else if (isNumber(firstData) && isNumber(secondData))
-        {
-            typeCheck[2] = 1;
-            // printf("first : %s secod : %s \n", firstData, secondData);
-        }
         // 첫번째가 숫자고, 두번째가 연산자라면 -> 중위
         else if (isNumber(firstData) && strchr("+-*/%^", secondData[0]) != NULL)
         {
             typeCheck[1] = 1;
+            // printf("first : %s secod : %s \n", firstData, secondData);
+        }
+        // 첫번째와 두번째 값이 모두 숫자라면 -> 후위
+        else if (isNumber(firstData) && isNumber(secondData))
+        {
+            typeCheck[2] = 1;
             // printf("first : %s secod : %s \n", firstData, secondData);
         }
 
@@ -483,35 +490,41 @@ void infixToPostfix()
     char symbol[MAX_EXPR_SIZE];
     precedence token;
 
-    printStack(&exprInStackOrigin);
+    // printStack(&exprInStackOrigin);
+
+    for (int i = 0; i < infixExprLen; i++)
+    {
+        printf("%s -> ", infixExpr[i]);
+    }
+    printf("\n");
 
     // expressionPush(&exprInStackOrigin, eos);
     // printStack(&exprInStackOrigin);
 
-    for (token = getToken(&exprInStackOrigin, symbol); token != eos; token = getToken(&exprInStackOrigin, symbol))
-    {
-        if (token == operand) // 피연산자라면
+    /*     for (token = getToken(&exprInStackOrigin, symbol); token != eos; token = getToken(&exprInStackOrigin, symbol))
         {
-            *postfixExpr++ = symbol[0]; // 문자열에 추가
+            if (token == operand) // 피연산자라면
+            {
+                *postfixExpr++ = symbol[0]; // 문자열에 추가
+            }
+            else if (token == rparen) // 오른쪽 괄호라면
+            {
+                while (getToken(&exprInStackOrigin, symbol) != lparen) // 왼쪽괄호가 나올 때까지
+                    printToken(expresstionPop(&exprInStackOrigin));    // pop 하여 출력
+                expresstionPop(&exprInStackOrigin);                    // 왼쪽 괄호는 출력하지 않고 pop
+            }
+            else // 이외의 연산자라면
+            {
+                precedence stackTop = getToken(&exprInStackOrigin, top(&exprInStackOrigin));
+                while (isp[stackTop] >= icp[token])
+                    printToken(expresstionPop(&exprInStackOrigin));
+                expressionPush(&exprInStackOrigin, token);
+            }
         }
-        else if (token == rparen) // 오른쪽 괄호라면
-        {
-            while (getToken(&exprInStackOrigin, symbol) != lparen) // 왼쪽괄호가 나올 때까지
-                printToken(expresstionPop(&exprInStackOrigin));    // pop 하여 출력
-            expresstionPop(&exprInStackOrigin);                    // 왼쪽 괄호는 출력하지 않고 pop
-        }
-        else // 이외의 연산자라면
-        {
-            precedence stackTop = getToken(&exprInStackOrigin, top(&exprInStackOrigin));
-            while (isp[stackTop] >= icp[token])
-                printToken(expresstionPop(&exprInStackOrigin));
-            expressionPush(&exprInStackOrigin, token);
-        }
-    }
 
-    while ((token = expresstionPop(&exprInStackOrigin)) != eos)
-        printToken(token);
+        while ((token = expresstionPop(&exprInStackOrigin)) != eos)
+            printToken(token);
 
-    // *postfixExpr = '\0';
-    printf("PO : %s\n", postfixExpr);
+        // *postfixExpr = '\0';
+        printf("PO : %s\n", postfixExpr); */
 }
