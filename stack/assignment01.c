@@ -43,7 +43,7 @@ int typeCheck[3] = {0, 0, 0};  // 순서대로, 전위 중위 후위 표현법 (표현법에 해당
 // 우선순위
 // (, ), +, -, *, /, %, ^, eos 순서
 int isp[] = {0, 17, 12, 12, 13, 13, 13, 15, 0};
-int icp[] = {20, 27, 12, 12, 13, 13, 13, 15, 0};
+int icp[] = {20, 17, 12, 12, 13, 13, 13, 15, 0};
 
 void execute(); // 실행하는 함수 따로 뺌
 
@@ -159,6 +159,7 @@ void execute()
         infixToPostfix(); // 일단 임시로 여기서 테스트
         printf("%s\n", postfixExpr);
         memset(infixExpr, 0, infixExprLen);
+        memset(postfixExpr, 0, 100);
         infixExprLen = 0;
     }
     else
@@ -485,46 +486,105 @@ void printToken(precedence token)
     }
 }
 
+char *getSymbolString(precedence token)
+{
+    static char symbol[4];
+    switch (token)
+    {
+    case plus:
+        strcpy(symbol, "+");
+        break;
+    case minus:
+        strcpy(symbol, "-");
+        break;
+    case times:
+        strcpy(symbol, "*");
+        break;
+    case divide:
+        strcpy(symbol, "/");
+        break;
+    case mod:
+        strcpy(symbol, "%");
+        break;
+    case power:
+        strcpy(symbol, "^");
+        break;
+    default:
+        break;
+    }
+    return symbol;
+}
+
+precedence getTokenFromChar(char op)
+{
+    switch (op)
+    {
+    case '(':
+        return lparen;
+    case ')':
+        return rparen;
+    case '+':
+        return plus;
+    case '-':
+        return minus;
+    case '*':
+        return times;
+    case '/':
+        return divide;
+    case '%':
+        return mod;
+    case '^':
+        return power;
+    default:
+        return operand;
+    }
+}
+
 void infixToPostfix()
 {
-    char symbol[MAX_EXPR_SIZE];
-    precedence token;
-
-    // printStack(&exprInStackOrigin);
+    precedence stack[MAX_STACK_SIZE];
+    int top = -1;
 
     for (int i = 0; i < infixExprLen; i++)
     {
-        printf("%s -> ", infixExpr[i]);
-    }
-    printf("\n");
+        char *symbol = infixExpr[i];
+        // precedence token;
 
-    // expressionPush(&exprInStackOrigin, eos);
-    // printStack(&exprInStackOrigin);
-
-    /*     for (token = getToken(&exprInStackOrigin, symbol); token != eos; token = getToken(&exprInStackOrigin, symbol))
+        // (피연산자)숫자인경우 (양수거나 음수거나)
+        if (isdigit(symbol[0]) || (symbol[0] == '-' && isdigit(symbol[1]))) // 피연산자라면
         {
-            if (token == operand) // 피연산자라면
-            {
-                *postfixExpr++ = symbol[0]; // 문자열에 추가
-            }
-            else if (token == rparen) // 오른쪽 괄호라면
-            {
-                while (getToken(&exprInStackOrigin, symbol) != lparen) // 왼쪽괄호가 나올 때까지
-                    printToken(expresstionPop(&exprInStackOrigin));    // pop 하여 출력
-                expresstionPop(&exprInStackOrigin);                    // 왼쪽 괄호는 출력하지 않고 pop
-            }
-            else // 이외의 연산자라면
-            {
-                precedence stackTop = getToken(&exprInStackOrigin, top(&exprInStackOrigin));
-                while (isp[stackTop] >= icp[token])
-                    printToken(expresstionPop(&exprInStackOrigin));
-                expressionPush(&exprInStackOrigin, token);
-            }
+            strcat(postfixExpr, symbol); // 피연산자를 postfixExpr에 추가
+            strcat(postfixExpr, " ");    // 토큰 사이에 공백 추가
         }
+        else if (strcmp(symbol, ")") == 0)
+        {
+            while (stack[top] != lparen)
+            {
+                strcat(postfixExpr, getSymbolString(stack[top--])); // 연산자를 postfixExpr에 추가
+                strcat(postfixExpr, " ");                           // 토큰 사이에 공백 추가
+            }
+            top--; // 왼쪽 괄호 pop
+        }
+        else if (strcmp(symbol, "(") == 0)
+        {
+            stack[++top] = lparen;
+        }
+        else
+        {
+            char op = symbol[0];
+            while (top >= 0 && isp[stack[top]] >= icp[getTokenFromChar(symbol[0])])
+            {
+                strcat(postfixExpr, getSymbolString(stack[top])); // 연산자를 postfixExpr에 추가
+                strcat(postfixExpr, " ");                         // 토큰 사이에 공백 추가
+                top--;
+            }
+            stack[++top] = getTokenFromChar(symbol[0]); // 연산자를 stack에 push
+        }
+    }
 
-        while ((token = expresstionPop(&exprInStackOrigin)) != eos)
-            printToken(token);
-
-        // *postfixExpr = '\0';
-        printf("PO : %s\n", postfixExpr); */
+    while (top >= 0)
+    {
+        strcat(postfixExpr, getSymbolString(stack[top--])); // 연산자를 postfixExpr에 추가
+        strcat(postfixExpr, " ");                           // 토큰 사이에 공백 추가
+    }
 }
