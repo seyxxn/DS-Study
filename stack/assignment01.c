@@ -157,7 +157,9 @@ void execute()
     {
         printf("possible\n");
         infixToPostfix(); // 일단 임시로 여기서 테스트
-        printf("%s\n", postfixExpr);
+        printf("PO : %s\n", postfixExpr);
+
+        // 초기화
         memset(infixExpr, 0, infixExprLen);
         memset(postfixExpr, 0, 100);
         infixExprLen = 0;
