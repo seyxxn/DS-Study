@@ -94,7 +94,6 @@ void expressionType(Stack *stack);              // 전위인지 중위인지 후위인지 확
 
 void printToken(precedence token); // 토근의 인덱스를 인자로 받아, 후위표기식 문자열에 문자를 추가하는 함수
 precedence getToken(Stack *stack, char *symbol);
-void infixToPostfix(); // 중위->후위
 
 void expressionPush(Stack *stack, precedence item);
 precedence expresstionPop(Stack *stack);
@@ -222,9 +221,6 @@ void execute()
         prefixExprOrigin[prefixExprOriginLen++] = data;
     }
 
-    // printStack(&exprInStack);
-    // printStack(&exprInStackOrigin);
-
     if (errorCheck(&exprInStack))
     {
         printf("error : wrong token input\n");
@@ -238,13 +234,13 @@ void execute()
     if (typeCheck[1])
     {
         printf("possible\n");
-        printf("IN : ");
+        printf("- IN : ");
         for (int i = 0; i < infixExprLen; i++)
             printf("%s ", infixExpr[i]);
         printf("\n");
         infixToPrefix();
         infixToPostfix();
-        evalPost(headerInToPost);
+        // evalPost(headerInToPost);
     }
     else
     {
@@ -256,15 +252,14 @@ void execute()
     {
         printf("possible\n");
         prefixToInfix();
-        printf("PR : ");
+        printf("- PR : ");
         for (int i = 0; i < prefixExprOriginLen; i++)
         {
             printf("%s ", prefixExprOrigin[i]);
         }
         printf("\n");
-        // 전위표기식을 후위표기식으로 바꿔야함
-        // 전위 -> 중위, 중위 -> 후위로 바꿀 예정
         infixToPostfix();
+        // evalPost(headerInToPost);
     }
     else
     {
@@ -277,7 +272,7 @@ void execute()
         printf("possible\n");
         postfixToInfix();
         infixToPrefix();
-        printf("PO : ");
+        printf("- PO : ");
         for (int i = 0; i < postfixExprOriginLen; i++)
         {
             printf("%s ", postfixExprOrigin[i]);
@@ -285,11 +280,25 @@ void execute()
         }
         printf("\n");
 
-        evalPost(headerPost);
+        // evalPost(headerPost);
     }
     else
     {
         printf("impossible\n");
+    }
+
+    // 결과 출력
+    if (typeCheck[1])
+    {
+        evalPost(headerInToPost);
+    }
+    else if (typeCheck[0])
+    {
+        evalPost(headerInToPost);
+    }
+    else if (typeCheck[2])
+    {
+        evalPost(headerPost);
     }
 }
 void initialize(Stack *stack)
@@ -716,6 +725,11 @@ void infixToPostfix()
     precedence stack[MAX_STACK_SIZE];
     int top = -1;
 
+    // printf("initial\n");
+    //  printNode(headerInToPost);
+    headerInToPost = NULL;
+    tempInToPost = NULL;
+
     for (int i = 0; i < infixExprLen; i++)
     {
         char *symbol = infixExpr[i];
@@ -753,7 +767,8 @@ void infixToPostfix()
     {
         insertNode(&headerInToPost, &tempInToPost, getSymbolString(stack[top--]));
     }
-    printf("PO : ");
+
+    printf("- PO : ");
     printNode(headerInToPost);
 }
 
@@ -768,7 +783,7 @@ void evalPost(listNode *header)
 
     if (p->link == NULL)
     { // 입력이 하나일 때 -> segmentfault 해결 미완
-        printf("result : %s\n", p->data);
+        printf("\nresult : %s\n", p->data);
         return;
     }
 
@@ -809,6 +824,7 @@ void evalPost(listNode *header)
                 if (op1int == 0 || op2int == 0)
                 {
                     printf("\nresult : Arithmetic error(cannot devide by zero)\n");
+                    return;
                 }
                 break;
             case '%':
@@ -843,6 +859,9 @@ void infixToPrefix()
 {
     precedence stack[MAX_STACK_SIZE];
     int top = -1;
+
+    headerInToPre = NULL;
+    tempInToPre = NULL;
 
     // 배열에 저장된 중위표기법을 뒤에서부터 읽어야함
     // 주위 ) 뒤에서부터 읽기 때문에 오른쪽 괄호가 왼쪽 괄호보다 먼저 읽힘
@@ -895,13 +914,16 @@ void infixToPrefix()
         free(data);
     }
 
-    printf("PR : ");
+    printf("- PR : ");
     printNode(headerInToPreReverse);
 }
 
 // 후위표기법을 중위표기법으로 바꾸는 함수
 void postfixToInfix()
 {
+    headerPostToIn = NULL;
+    tempPostToIn = NULL;
+
     for (int i = 0; i <= postfixExprOriginLen - 1; i++)
     {
         char *symbol = postfixExprOrigin[i];
@@ -947,13 +969,38 @@ void postfixToInfix()
         }
     }
 
-    printf("IN : ");
+    printf("- IN : ");
     printNode(headerPostToIn);
+
+    // insertExpr에 넣기
+
+    // 초기화
+    memset(infixExpr, 0, infixExprLen);
+    infixExprLen = 0;
+
+    listNode *p = headerPostToIn;
+    for (int i = 0; p != NULL; i++)
+    {
+        char *data = p->data;
+        char *token = strtok(data, " ");
+
+        while (token != NULL)
+        {
+            infixExpr[infixExprLen] = strdup(token);
+            infixExprLen++;
+
+            token = strtok(NULL, " ");
+        }
+
+        p = p->link;
+    }
 }
 
 // 전위표기법을 중위표기법으로 바꾸는 함수
 void prefixToInfix()
 {
+    headerPreToIn = NULL;
+    tempPreToIn = NULL;
     // 저장된 전위표기법을 역순으로 읽어야함
     for (int i = prefixExprOriginLen - 1; i >= 0; i--)
     {
@@ -1000,6 +1047,29 @@ void prefixToInfix()
         }
     }
 
-    printf("IN : ");
+    printf("- IN : ");
     printNode(headerPreToIn);
+
+    // insertExpr에 넣기
+
+    // 초기화
+    memset(infixExpr, 0, infixExprLen);
+    infixExprLen = 0;
+
+    listNode *p = headerPreToIn;
+    for (int i = 0; p != NULL; i++)
+    {
+        char *data = p->data;
+        char *token = strtok(data, " ");
+
+        while (token != NULL)
+        {
+            infixExpr[infixExprLen] = strdup(token);
+            infixExprLen++;
+
+            token = strtok(NULL, " ");
+        }
+
+        p = p->link;
+    }
 }
