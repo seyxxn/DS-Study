@@ -26,8 +26,8 @@ typedef struct listNode
     struct listNode *link;
 } listNode;
 
-listNode *header;
-listNode *temp;
+listNode *headerPost;
+listNode *tempPost;
 
 typedef enum _precedence
 {
@@ -169,8 +169,8 @@ void execute()
         printf("possible\n");
         infixToPostfix(); // 일단 임시로 여기서 테스트
 
-        header = NULL;
-        temp = NULL;
+        headerPost = NULL;
+        tempPost = NULL;
 
         // 초기화
         memset(infixExpr, 0, infixExprLen);
@@ -555,26 +555,26 @@ precedence getTokenFromChar(char op)
     }
 }
 
-void insertNode(char *data)
+void insertNode(listNode **header, listNode **temp, char *data)
 {
     listNode *newNode = (listNode *)malloc(sizeof(listNode));
     newNode->data = strdup(data);
 
-    if (header == NULL)
+    if (*header == NULL)
     {
         newNode->link = NULL;
-        header = newNode;
-        temp = newNode;
+        *header = newNode;
+        *temp = newNode;
     }
     else
     {
         newNode->link = NULL;
-        temp->link = newNode;
-        temp = newNode;
+        (*temp)->link = newNode;
+        *temp = newNode;
     }
 }
 
-void printNode()
+void printNode(listNode *header)
 {
     listNode *p = header;
     while (p != NULL)
@@ -597,13 +597,13 @@ void infixToPostfix()
         // (피연산자)숫자인경우 (양수거나 음수거나)
         if (isdigit(symbol[0]) || (symbol[0] == '-' && isdigit(symbol[1]))) // 피연산자라면
         {
-            insertNode(symbol);
+            insertNode(&headerPost, &tempPost, symbol);
         }
         else if (strcmp(symbol, ")") == 0) // 오른쪽 괄호일때
         {
             while (stack[top] != lparen)
             {
-                insertNode(getSymbolString(stack[top--]));
+                insertNode(&headerPost, &tempPost, getSymbolString(stack[top--]));
             }
             top--; // 왼쪽 괄호 pop
         }
@@ -616,7 +616,7 @@ void infixToPostfix()
             char op = symbol[0];
             while (top >= 0 && isp[stack[top]] >= icp[getTokenFromChar(op)])
             {
-                insertNode(getSymbolString(stack[top]));
+                insertNode(&headerPost, &tempPost, getSymbolString(stack[top]));
                 top--;
             }
             stack[++top] = getTokenFromChar(symbol[0]); // 연산자를 stack에 push
@@ -625,8 +625,8 @@ void infixToPostfix()
 
     while (top >= 0)
     {
-        insertNode(getSymbolString(stack[top--]));
+        insertNode(&headerPost, &tempPost, getSymbolString(stack[top--]));
     }
     printf("PO : ");
-    printNode();
+    printNode(headerPost);
 }
