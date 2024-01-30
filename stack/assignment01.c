@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 
 #define MAX_EXPR_SIZE 100
 #define MAX_STACK_SIZE 100
@@ -17,6 +18,16 @@ typedef struct Stack
     Node *top; // 스택의 top을 나타내는 포인터
     int size;
 } Stack;
+
+// 링크드리스트 선언
+typedef struct listNode
+{
+    char *data;
+    struct listNode *link;
+} listNode;
+
+listNode *header;
+listNode *temp;
 
 typedef enum _precedence
 {
@@ -157,7 +168,9 @@ void execute()
     {
         printf("possible\n");
         infixToPostfix(); // 일단 임시로 여기서 테스트
-        printf("PO : %s\n", postfixExpr);
+
+        header = NULL;
+        temp = NULL;
 
         // 초기화
         memset(infixExpr, 0, infixExprLen);
@@ -542,6 +555,36 @@ precedence getTokenFromChar(char op)
     }
 }
 
+void insertNode(char *data)
+{
+    listNode *newNode = (listNode *)malloc(sizeof(listNode));
+    newNode->data = strdup(data);
+
+    if (header == NULL)
+    {
+        newNode->link = NULL;
+        header = newNode;
+        temp = newNode;
+    }
+    else
+    {
+        newNode->link = NULL;
+        temp->link = newNode;
+        temp = newNode;
+    }
+}
+
+void printNode()
+{
+    listNode *p = header;
+    while (p != NULL)
+    {
+        printf("%s ", p->data);
+        p = p->link;
+    }
+    printf("\n");
+}
+
 void infixToPostfix()
 {
     precedence stack[MAX_STACK_SIZE];
@@ -550,34 +593,30 @@ void infixToPostfix()
     for (int i = 0; i < infixExprLen; i++)
     {
         char *symbol = infixExpr[i];
-        // precedence token;
 
         // (피연산자)숫자인경우 (양수거나 음수거나)
         if (isdigit(symbol[0]) || (symbol[0] == '-' && isdigit(symbol[1]))) // 피연산자라면
         {
-            strcat(postfixExpr, symbol); // 피연산자를 postfixExpr에 추가
-            strcat(postfixExpr, " ");    // 토큰 사이에 공백 추가
+            insertNode(symbol);
         }
-        else if (strcmp(symbol, ")") == 0)
+        else if (strcmp(symbol, ")") == 0) // 오른쪽 괄호일때
         {
             while (stack[top] != lparen)
             {
-                strcat(postfixExpr, getSymbolString(stack[top--])); // 연산자를 postfixExpr에 추가
-                strcat(postfixExpr, " ");                           // 토큰 사이에 공백 추가
+                insertNode(getSymbolString(stack[top--]));
             }
             top--; // 왼쪽 괄호 pop
         }
-        else if (strcmp(symbol, "(") == 0)
+        else if (strcmp(symbol, "(") == 0) // 왼쪽 괄호일 때
         {
             stack[++top] = lparen;
         }
-        else
+        else // 연산자인 경우
         {
             char op = symbol[0];
-            while (top >= 0 && isp[stack[top]] >= icp[getTokenFromChar(symbol[0])])
+            while (top >= 0 && isp[stack[top]] >= icp[getTokenFromChar(op)])
             {
-                strcat(postfixExpr, getSymbolString(stack[top])); // 연산자를 postfixExpr에 추가
-                strcat(postfixExpr, " ");                         // 토큰 사이에 공백 추가
+                insertNode(getSymbolString(stack[top]));
                 top--;
             }
             stack[++top] = getTokenFromChar(symbol[0]); // 연산자를 stack에 push
@@ -586,7 +625,8 @@ void infixToPostfix()
 
     while (top >= 0)
     {
-        strcat(postfixExpr, getSymbolString(stack[top--])); // 연산자를 postfixExpr에 추가
-        strcat(postfixExpr, " ");                           // 토큰 사이에 공백 추가
+        insertNode(getSymbolString(stack[top--]));
     }
+    printf("PO : ");
+    printNode();
 }
