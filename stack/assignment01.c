@@ -35,6 +35,15 @@ listNode *tempInToPre;
 listNode *headerInToPreReverse; // 역순으로 다시 저장해야함
 listNode *tempInToPreReverse;
 
+listNode *headerPostToIn;
+listNode *tempPostToIn;
+
+listNode *headerPost;
+listNode *tempPost;
+
+listNode *headerPreToIn;
+listNode *tempPreToIn;
+
 typedef enum _precedence
 {
     lparen,
@@ -94,7 +103,7 @@ void insertNode(listNode **header, listNode **temp, char *data); // 연결리스트에
 char *deleteNode(listNode **header, listNode **temp);            // 연결리스트에서 노드를 삭제하는 함수
 void printNode(listNode *header);                                // 연결리스트를 출력하는 함수
 void infixToPostfix();                                           // 중위표기법을 후위표기법으로 바꾸는 함수
-void evalPost();                                                  // 후위표기식을 계산하는 함수
+void evalPost(listNode *header);                                 // 후위표기식을 계산하는 함수
 
 void infixToPrefix();  // 중위표기법을 전위표기법으로 바꾸는 함수
 void postfixToInfix(); // 후위표기법을 중위표기법으로 바꾸는 함수
@@ -109,6 +118,18 @@ char postexpr[MAX_EXPR_SIZE] = {
 };                            // 후위표기식을 저장하는 배열 변수
 char *postfixExpr = postexpr; //   후위표기식을 가리키고 있는 포인터변수
 
+// 사용자에게 입력받은 후위표기법을 저장하는 변수
+char *postfixExprOrigin[MAX_EXPR_SIZE] = {
+    0,
+};
+int postfixExprOriginLen = 0;
+
+// 사용자에게 입력받은 전위표기법을 저장하는 변수
+char *prefixExprOrigin[MAX_STACK_SIZE] = {
+    0,
+};
+int prefixExprOriginLen = 0;
+
 int main(int argc, char *argv[])
 {
     initialize(&exprInStack);
@@ -118,6 +139,36 @@ int main(int argc, char *argv[])
     {
         while (continueCheck)
         {
+            // stack을 초기화
+            initialize(&exprInStack);
+            initialize(&exprInStackOrigin);
+            typeCheck[0] = 0;
+            typeCheck[1] = 0;
+            typeCheck[2] = 0;
+
+            headerInToPost = NULL;
+            tempInToPost = NULL;
+
+            headerInToPre = NULL;
+            tempInToPre = NULL;
+            headerInToPreReverse = NULL;
+            tempInToPreReverse = NULL;
+
+            headerPostToIn = NULL;
+            tempPostToIn = NULL;
+
+            headerPreToIn = NULL;
+            tempPreToIn = NULL;
+
+            // 초기화
+            memset(infixExpr, 0, infixExprLen);
+            memset(postfixExprOrigin, 0, postfixExprOriginLen);
+            memset(prefixExprOrigin, 0, prefixExprOriginLen);
+            memset(postfixExpr, 0, 100);
+            infixExprLen = 0;
+            postfixExprOriginLen = 0;
+            prefixExprOriginLen = 0;
+
             printf("input expression : ");
             fgets(expr, sizeof(expr), stdin);
             expr[strcspn(expr, "\n")] = '\0';
@@ -136,11 +187,6 @@ int main(int argc, char *argv[])
             {
                 execute();
             }
-            // stack을 초기화
-            initialize(&exprInStack);
-            typeCheck[0] = 0;
-            typeCheck[1] = 0;
-            typeCheck[2] = 0;
         }
     }
     else if (argc == 2) // 명령행 인자로 수식 입력받은 경우 -> 하나의 수식 분석 후에 프로그램 종료
@@ -172,6 +218,8 @@ void execute()
         push(&exprInStack, data);
         push(&exprInStackOrigin, data);
         infixExpr[infixExprLen++] = data;
+        postfixExprOrigin[postfixExprOriginLen++] = data;
+        prefixExprOrigin[prefixExprOriginLen++] = data;
     }
 
     // printStack(&exprInStack);
@@ -196,20 +244,7 @@ void execute()
         printf("\n");
         infixToPrefix();
         infixToPostfix();
-        evalPost();
-
-        headerInToPost = NULL;
-        tempInToPost = NULL;
-
-        headerInToPre = NULL;
-        tempInToPre = NULL;
-        headerInToPreReverse = NULL;
-        tempInToPreReverse = NULL;
-
-        // 초기화
-        memset(infixExpr, 0, infixExprLen);
-        memset(postfixExpr, 0, 100);
-        infixExprLen = 0;
+        evalPost(headerInToPost);
     }
     else
     {
@@ -220,6 +255,16 @@ void execute()
     if (typeCheck[0])
     {
         printf("possible\n");
+        prefixToInfix();
+        printf("PR : ");
+        for (int i = 0; i < prefixExprOriginLen; i++)
+        {
+            printf("%s ", prefixExprOrigin[i]);
+        }
+        printf("\n");
+        // 전위표기식을 후위표기식으로 바꿔야함
+        // 전위 -> 중위, 중위 -> 후위로 바꿀 예정
+        infixToPostfix();
     }
     else
     {
@@ -231,7 +276,16 @@ void execute()
     {
         printf("possible\n");
         postfixToInfix();
-        evalPost();
+        infixToPrefix();
+        printf("PO : ");
+        for (int i = 0; i < postfixExprOriginLen; i++)
+        {
+            printf("%s ", postfixExprOrigin[i]);
+            insertNode(&headerPost, &tempPost, postfixExprOrigin[i]);
+        }
+        printf("\n");
+
+        evalPost(headerPost);
     }
     else
     {
@@ -703,18 +757,19 @@ void infixToPostfix()
     printNode(headerInToPost);
 }
 
-void evalPost()
+void evalPost(listNode *header)
 {
     int result = 0;                 // 결과값을 저장할 변수
-    listNode *p = headerInToPost;   // headerInToPost가 가리키는 연결리스트에 지금 후위표기식이 저장되어있는 상태
+    listNode *p = header;           // headerInToPost가 가리키는 연결리스트에 지금 후위표기식이 저장되어있는 상태
     listNode *evalPostStack = NULL; // 후위표기식 계산에 필요한 스택을 가리키는 변수 선언
     listNode *evalPostTemp = NULL;  // 후위표기식 계산에 필요한 temp 변수 선언
     char *op1, op2;
     char resultChar[100];
 
-    if(p->link == NULL){ // 입력이 하나일 때 -> segmentfault 해결 미완
+    if (p->link == NULL)
+    { // 입력이 하나일 때 -> segmentfault 해결 미완
         printf("result : %s\n", p->data);
-        return ;
+        return;
     }
 
     while (p != NULL)
@@ -847,9 +902,104 @@ void infixToPrefix()
 // 후위표기법을 중위표기법으로 바꾸는 함수
 void postfixToInfix()
 {
+    for (int i = 0; i <= postfixExprOriginLen - 1; i++)
+    {
+        char *symbol = postfixExprOrigin[i];
+        // 숫자라면 -> 연결리스트에 새로운 노드로 삽입
+        if (isdigit(symbol[0]) || (symbol[0] == '-' && isdigit(symbol[1])))
+        {
+            insertNode(&headerPostToIn, &tempPostToIn, symbol);
+        }
+        else // 연산자라면
+        {
+            char *op2 = deleteNode(&headerPostToIn, &tempPostToIn);
+            char *op1 = deleteNode(&headerPostToIn, &tempPostToIn);
+
+            char *temp = malloc(sizeof(char) * 100);
+            temp[0] = '\0';
+
+            if (i == postfixExprOriginLen - 1)
+            {
+                strcat(temp, op1);
+                strcat(temp, " ");
+                strcat(temp, symbol);
+                strcat(temp, " ");
+                strcat(temp, op2);
+            }
+            else
+            {
+                strcat(temp, "(");
+                strcat(temp, " ");
+
+                strcat(temp, op1);
+                strcat(temp, " ");
+
+                strcat(temp, symbol);
+                strcat(temp, " ");
+
+                strcat(temp, op2);
+                strcat(temp, " ");
+
+                strcat(temp, ")");
+            }
+
+            insertNode(&headerPostToIn, &tempPostToIn, temp);
+        }
+    }
+
+    printf("IN : ");
+    printNode(headerPostToIn);
 }
 
 // 전위표기법을 중위표기법으로 바꾸는 함수
 void prefixToInfix()
 {
+    // 저장된 전위표기법을 역순으로 읽어야함
+    for (int i = prefixExprOriginLen - 1; i >= 0; i--)
+    {
+        char *symbol = prefixExprOrigin[i];
+        // 피연산자인 경우 (양수거나 음수거나)
+        if (isdigit(symbol[0]) || (symbol[0] == '-' && isdigit(symbol[1])))
+        {
+            insertNode(&headerPreToIn, &tempPreToIn, symbol); // 바로 연결리스트에 넣음
+        }
+        else // 연산자인 경우
+        {
+            char *op1 = deleteNode(&headerPreToIn, &tempPreToIn);
+            char *op2 = deleteNode(&headerPreToIn, &tempPreToIn);
+
+            char *temp = malloc(sizeof(char) * 100);
+            temp[0] = '\0';
+
+            if (i == 0)
+            {
+                strcat(temp, op1);
+                strcat(temp, " ");
+                strcat(temp, symbol);
+                strcat(temp, " ");
+                strcat(temp, op2);
+            }
+            else
+            {
+                strcat(temp, "(");
+                strcat(temp, " ");
+
+                strcat(temp, op1);
+                strcat(temp, " ");
+
+                strcat(temp, symbol);
+                strcat(temp, " ");
+
+                strcat(temp, op2);
+                strcat(temp, " ");
+
+                strcat(temp, ")");
+            }
+
+            insertNode(&headerPreToIn, &tempPreToIn, temp);
+        }
+    }
+
+    printf("IN : ");
+    printNode(headerPreToIn);
 }
