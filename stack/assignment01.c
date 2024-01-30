@@ -184,8 +184,8 @@ void execute()
         initialize(&exprInStackOrigin);
         return;
     }
-    expressionType(&exprInStack);
 
+    expressionType(&exprInStack);
     printf("infix : "); // 중위표기식인 경우
     if (typeCheck[1])
     {
@@ -711,6 +711,11 @@ void evalPost()
     listNode *evalPostTemp = NULL;  // 후위표기식 계산에 필요한 temp 변수 선언
     char *op1, op2;
     char resultChar[100];
+
+    if(p->link == NULL){ // 입력이 하나일 때 -> segmentfault 해결 미완
+        printf("result : %s\n", p->data);
+        return ;
+    }
 
     while (p != NULL)
     {
