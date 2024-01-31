@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
     {
         while (continueCheck)
         {
-            // stack을 초기화
+            // 초기화
             initialize(&exprInStack);
             typeCheck[0] = 0;
             typeCheck[1] = 0;
@@ -152,7 +152,6 @@ int main(int argc, char *argv[])
             headerPreToIn = NULL;
             tempPreToIn = NULL;
 
-            // 초기화
             memset(infixExpr, 0, infixExprLen);
             memset(postfixExprOrigin, 0, postfixExprOriginLen);
             memset(prefixExprOrigin, 0, prefixExprOriginLen);
@@ -165,25 +164,25 @@ int main(int argc, char *argv[])
             fgets(expr, sizeof(expr), stdin);
             expr[strcspn(expr, "\n")] = '\0';
 
-            if (strcmp(expr, "exit") == 0)
+            if (strcmp(expr, "exit") == 0) // exit 입력시에 프로그램 종료
             {
                 printf("exit program..\n");
                 continueCheck = 0;
                 return 0;
             }
-            else if (expr[0] == '\0')
+            else if (expr[0] == '\0') // 엔터 입력시 다시 압력하도록
             {
                 continue;
             }
             else
             {
-                execute();
+                execute(); // 실행함수
             }
         }
     }
     else if (argc == 2) // 명령행 인자로 수식 입력받은 경우 -> 하나의 수식 분석 후에 프로그램 종료
     {
-        strcpy(expr, argv[1]);
+        strcpy(expr, argv[1]); // 1번째 인자로 받은 문자열을 expr에 저장
         execute();
     }
 
@@ -192,8 +191,8 @@ int main(int argc, char *argv[])
 
 void execute()
 {
-    getTokenToStack(expr, &exprInStack);
-    // 새로운 스택을 만들어서 exprInStack의 내용을 복사
+    getTokenToStack(expr, &exprInStack); // 사용자에게 받은 문자열을 공백 단위로 exprInStack에 삽입
+
     Stack tempStack;
     initialize(&tempStack);
 
@@ -202,7 +201,6 @@ void execute()
         push(&tempStack, pop(&exprInStack));
     }
 
-    // tempStack의 내용을 exprInStack과 exprInStackOrigin에 복사
     while (!isEmpty(&tempStack))
     {
         char *data = pop(&tempStack);
@@ -212,6 +210,19 @@ void execute()
         prefixExprOrigin[prefixExprOriginLen++] = data;
     }
 
+    /*     while (!isEmpty(&exprInStack))
+        {
+            char *data = pop(&exprInStack);
+            printf("data : %s\n", data);
+            infixExpr[infixExprLen++] = data;
+            postfixExprOrigin[postfixExprOriginLen++] = data;
+            prefixExprOrigin[prefixExprOriginLen++] = data;
+        }
+        -> 그냥 이렇게 단순하게 하면 안되는 이유 :
+        배열에 저장하기 위해 while문을 돌면서 pop을 하는데 이때 이렇게 작성하면 원본인 exprInStack의 노드가 삭제되기 때문이다.
+        원본유지를 위해 tempStack을 선언해서 역순으로 저장한 뒤에 pop을 하며 배열에 저장하고 exprInStack의 값은 유지된다.
+    */
+
     if (errorCheck(&exprInStack))
     {
         printf("error : wrong token input\n");
@@ -219,7 +230,8 @@ void execute()
         return;
     }
 
-    expressionType(&exprInStack);
+    expressionType(&exprInStack); // 전위인지, 중위인지, 후위인지 확인하는 함수 실행
+
     printf("infix : "); // 중위표기식인 경우
     if (typeCheck[1])
     {
@@ -228,8 +240,8 @@ void execute()
         for (int i = 0; i < infixExprLen; i++)
             printf("%s ", infixExpr[i]);
         printf("\n");
-        infixToPrefix();
-        infixToPostfix();
+        infixToPrefix();  // 중위표기식 -> 전위표기식 변환
+        infixToPostfix(); // 중위표기식 -> 후위표기식 변환
     }
     else
     {
@@ -240,14 +252,14 @@ void execute()
     if (typeCheck[0])
     {
         printf("possible\n");
-        prefixToInfix();
+        prefixToInfix(); // 전위표기식 -> 중위표기식 변환
         printf("- PR : ");
         for (int i = 0; i < prefixExprOriginLen; i++)
         {
             printf("%s ", prefixExprOrigin[i]);
         }
         printf("\n");
-        infixToPostfix();
+        infixToPostfix(); // 위에서 변환한 중위표기식 -> 후위표기식 변환
     }
     else
     {
@@ -258,8 +270,8 @@ void execute()
     if (typeCheck[2])
     {
         printf("possible\n");
-        postfixToInfix();
-        infixToPrefix();
+        postfixToInfix(); // 후위표기식 -> 중위표기식 변환
+        infixToPrefix();  // 위에서 변환한 중위표기식 -> 전위표기식 변환
         printf("- PO : ");
         for (int i = 0; i < postfixExprOriginLen; i++)
         {
@@ -273,18 +285,18 @@ void execute()
         printf("impossible\n");
     }
 
-    // 결과 출력
-    if (typeCheck[1])
+    // 결과 출력 -> 계산은 항상 후위표기식으로 함
+    if (typeCheck[1]) // 중위표기식
     {
-        evalPost(headerInToPost);
+        evalPost(headerInToPost); // 중위->후위표기식으로 바꾼 값을 넘겨줌
     }
-    else if (typeCheck[0])
+    else if (typeCheck[0]) // 전위표기식
     {
-        evalPost(headerInToPost);
+        evalPost(headerInToPost); // 전위->중위->후위표기식으로 바꾼 값을 넘겨줌
     }
-    else if (typeCheck[2])
+    else if (typeCheck[2]) // 후위표기식
     {
-        evalPost(headerPost);
+        evalPost(headerPost); // 바로 후위표기식을 넘겨줌
     }
 }
 
@@ -363,13 +375,11 @@ int isNumber(char *str)
 
     while (*str)
     {
-        if (!isdigit(*str) && *str != '.')
-        // 숫자가 아니고 소수점이 아닌 것이 들어오면 0 반환
+        if (!isdigit(*str) && *str != '.') // 숫자가 아니고 소수점이 아닌 것이 들어오면 0 반환
         {
             return 0;
         }
-        // 소수점이 들어오게 되면 소수점 카운트
-        if (*str == '.')
+        if (*str == '.') // 소수점이 들어오면 소수점 카운트
         {
             dotCnt++;
             if (dotCnt > 1) // 소수점이 1개보다 많으면 숫자가 아님 -> 0을 반환
@@ -382,6 +392,7 @@ int isNumber(char *str)
 
 int errorCheck(Stack *stack)
 {
+    // 스택을 돌면서 연산자가 아니거나 숫자가 아니면 에러처리 (연산자와 숫자가 붙어있는 경우도 에러 처리)
     for (Node *p = stack->top; p != NULL; p = p->next)
     {
         if (isNumber(p->data) ||
@@ -423,24 +434,20 @@ void expressionType(Stack *stack)
     }
     else
     {
-        while (stack->size > 2)
+        while (stack->size > 2) // 첫번째와 두번째 값으로 중위, 후위, 전위를 판별하기 위해 크기가 2가 될때까지 pop 한다.
             pop(stack);
 
-        char secondData[MAX_EXPR_SIZE];
+        char secondData[MAX_EXPR_SIZE]; // 먼저 pop하는 것이 두번째 값이 된다.
         strcpy(secondData, pop(stack));
 
         char firstData[MAX_EXPR_SIZE];
         strcpy(firstData, pop(stack));
 
-        //  첫번째가 괄호라면 -> 중위
+        // 이때 if 조건문의 순서도 유의해야함 !!
+        // 첫번째가 괄호라면 -> 중위
         if (firstData[0] == '(')
         {
             typeCheck[1] = 1;
-        }
-        // 첫번째가 연산자라면 -> 전위
-        else if (strchr("+-*/%^", firstData[0]) != NULL)
-        {
-            typeCheck[0] = 1;
         }
         // 첫번째가 숫자고, 두번째가 연산자라면 -> 중위
         else if (isNumber(firstData) && strchr("+-*/%^", secondData[0]) != NULL)
@@ -451,6 +458,11 @@ void expressionType(Stack *stack)
         else if (isNumber(firstData) && isNumber(secondData))
         {
             typeCheck[2] = 1;
+        }
+        // 첫번째가 연산자라면 -> 전위
+        else if (strchr("+-*/%^", firstData[0]) != NULL)
+        {
+            typeCheck[0] = 1;
         }
 
         return;
@@ -637,7 +649,7 @@ void printNode(listNode *header)
     printf("\n");
 }
 
-void infixToPostfix()
+void infixToPostfix() // 중위표기법 -> 후위표기법
 {
     precedence stack[MAX_STACK_SIZE];
     int top = -1;
@@ -647,16 +659,16 @@ void infixToPostfix()
 
     for (int i = 0; i < infixExprLen; i++)
     {
-        char *symbol = infixExpr[i];
+        char *symbol = infixExpr[i]; // 중위표기법을 하나씩 읽어옴 (문자열로)
 
-        // (피연산자)숫자인경우 (양수거나 음수거나)
+        // (피연산자)숫자인경우 (양수거나 음수거나) -> 노드에 삽입
         if (isdigit(symbol[0]) || (symbol[0] == '-' && isdigit(symbol[1]))) // 피연산자라면
         {
             insertNode(&headerInToPost, &tempInToPost, symbol);
         }
         else if (strcmp(symbol, ")") == 0) // 오른쪽 괄호일때
         {
-            while (stack[top] != lparen)
+            while (stack[top] != lparen) // 왼쪽 괄호 나올때까지 pop
             {
                 insertNode(&headerInToPost, &tempInToPost, getSymbolString(stack[top--]));
             }
@@ -664,21 +676,21 @@ void infixToPostfix()
         }
         else if (strcmp(symbol, "(") == 0) // 왼쪽 괄호일 때
         {
-            stack[++top] = lparen;
+            stack[++top] = lparen; // 스택에 넣기
         }
         else // 연산자인 경우
         {
-            char op = symbol[0];
-            while (top >= 0 && isp[stack[top]] >= icp[getTokenFromChar(op)])
+            char op = symbol[0];                                             // 연산자를 char 문자에 담음 (무조건 1글자라서)
+            while (top >= 0 && isp[stack[top]] >= icp[getTokenFromChar(op)]) // 스택에 있는 연산자의 우선순위보다 넣으려고 하는 연산자의 우선순위가 높아질때까지 반복문
             {
-                insertNode(&headerInToPost, &tempInToPost, getSymbolString(stack[top]));
-                top--;
+                insertNode(&headerInToPost, &tempInToPost, getSymbolString(stack[top])); // stack에 있는 것을 하나씩 꺼내서 노드에 삽입
+                top--; // stack에서 꺼내니까 top--;
             }
-            stack[++top] = getTokenFromChar(symbol[0]); // 연산자를 stack에 push
+            stack[++top] = getTokenFromChar(symbol[0]); // 연산자(넣으려고 하는 연산자)를 stack에 push
         }
     }
 
-    while (top >= 0)
+    while (top >= 0) // 위의 과정이 끝나고, 아직 stack에 연산자가 남아있다면 pop하여 노드에 삽입함
     {
         insertNode(&headerInToPost, &tempInToPost, getSymbolString(stack[top--]));
     }
@@ -687,7 +699,7 @@ void infixToPostfix()
     printNode(headerInToPost);
 }
 
-void infixToPrefix()
+void infixToPrefix() // 중위표기법 -> 전위표기법
 {
     precedence stack[MAX_STACK_SIZE];
     int top = -1;
@@ -696,10 +708,10 @@ void infixToPrefix()
     tempInToPre = NULL;
 
     // 배열에 저장된 중위표기법을 뒤에서부터 읽어야함
-    // 주위 ) 뒤에서부터 읽기 때문에 오른쪽 괄호가 왼쪽 괄호보다 먼저 읽힘
+    // 주위 ) 뒤에서부터 읽기 때문에 오른쪽 괄호가 왼쪽 괄호보다 먼저 읽힘 -> 따라서 우선순위도 달라짐 (isp2, icp2 사용)
     for (int i = infixExprLen - 1; i >= 0; i--)
     {
-        char *symbol = infixExpr[i];
+        char *symbol = infixExpr[i]; // symbol로 뒤에서부터 읽어온다.
 
         // 피연산자인 경우 (양수거나 음수거나)
         if (isdigit(symbol[0]) || (symbol[0] == '-' && isdigit(symbol[1])))
@@ -733,6 +745,8 @@ void infixToPrefix()
     {
         insertNode(&headerInToPre, &tempInToPre, getSymbolString(stack[top--]));
     }
+    // 이런 과정을 거치고 나면, 예를 들어 2 + 3 인 중위식이 있을 때, 3부터 읽어서 headerInToPre가 가리키는 연결리스트에는 3 2 + 이렇게 저장됨
+    // 즉, 완벽한 전위식은 3 2 + 의 역순인 + 2 3 를 저장하고 있어야함. 따라서 역순을 저장하는 연결리스트를 더 선언해야하고 headerInToPre를 뒤에서부터 pop하면서 저장한다.
 
     headerInToPreReverse = NULL;
     tempInToPreReverse = NULL;
@@ -750,7 +764,7 @@ void infixToPrefix()
     printNode(headerInToPreReverse);
 }
 
-void postfixToInfix()
+void postfixToInfix() // 후위표기법 -> 중위 표기법
 {
     headerPostToIn = NULL;
     tempPostToIn = NULL;
@@ -763,9 +777,9 @@ void postfixToInfix()
         {
             insertNode(&headerPostToIn, &tempPostToIn, symbol);
         }
-        else // 연산자라면
+        else // 연산자라면 피연산자 2개를 pop하여 가져옴
         {
-            char *op2 = deleteNode(&headerPostToIn, &tempPostToIn);
+            char *op2 = deleteNode(&headerPostToIn, &tempPostToIn); 
             char *op1 = deleteNode(&headerPostToIn, &tempPostToIn);
 
             char *temp = malloc(sizeof(char) * 100);
@@ -826,7 +840,7 @@ void postfixToInfix()
     }
 }
 
-void prefixToInfix()
+void prefixToInfix() // 전위표기법 -> 중위표기법
 {
     headerPreToIn = NULL;
     tempPreToIn = NULL;
@@ -904,7 +918,7 @@ void prefixToInfix()
 
 void evalPost(listNode *header)
 {
-    int result = 0;                 // 결과값을 저장할 변수
+    float result = 0;               // 결과값을 저장할 변수
     listNode *p = header;           // headerInToPost가 가리키는 연결리스트에 지금 후위표기식이 저장되어있는 상태
     listNode *evalPostStack = NULL; // 후위표기식 계산에 필요한 스택을 가리키는 변수 선언
     listNode *evalPostTemp = NULL;  // 후위표기식 계산에 필요한 temp 변수 선언
@@ -929,40 +943,40 @@ void evalPost(listNode *header)
             char *op2 = deleteNode(&evalPostStack, &evalPostTemp);
             char *op1 = deleteNode(&evalPostStack, &evalPostTemp);
 
-            int op2int = atoi(op2); // 문자열로 받아온 값들을 정수형으로 변환 -> 계산을 해야해서
-            int op1int = atoi(op1);
+            float op2float = atof(op2); // 문자열로 받아온 값들을 정수형으로 변환 -> 계산을 해야해서
+            float op1float = atof(op1);
 
             char opType = (p->data)[0]; // 연산자를 받을 변수
             switch (opType)             // 연산자에 따라 계산을 하고 결과 값을 받음
             {
             case '+':
-                result = op1int + op2int;
+                result = op1float + op2float;
                 break;
             case '-':
-                result = op1int - op2int;
+                result = op1float - op2float;
                 break;
             case '*':
-                result = op1int * op2int;
+                result = op1float * op2float;
                 break;
             case '/':
-                result = op1int / op2int;
-                if (op2int == 0)
+                result = op1float / op2float;
+                if (op2float == 0)
                 {
                     printf("\nresult : Arithmetic error(cannot devide by zero)\n");
                     return;
                 }
                 break;
             case '%':
-                result = op1int % op2int;
+                result = (int)op1float % (int)op2float;
                 break;
             case '^':
-                result = pow((double)op1int, (double)op2int);
+                result = pow((double)op1float, (double)op2float);
                 break;
             default:
                 break;
             }
 
-            sprintf(resultChar, "%d", result);
+            sprintf(resultChar, "%f", result);
 
             insertNode(&evalPostStack, &evalPostTemp, resultChar);
         }
@@ -970,5 +984,5 @@ void evalPost(listNode *header)
         p = p->link;
     }
 
-    printf("\nresult : %d\n", result);
+    printf("\nresult : %f\n", result);
 }
