@@ -61,7 +61,7 @@ typedef enum _precedence
 char expr[MAX_EXPR_SIZE];      // 사용자에게 표기식을 입력받는 변수
 char exprToken[MAX_EXPR_SIZE]; // 사용자에게 표기식을 입력받아 토큰을 구분하여 넣음
 Stack exprInStack;             // 사용자에게 받은 문자열을 삽입한 스택 선언
-Stack exprInStackOrigin;       // 사용자에게 받은 문자열을 삽입한 스택 -> 순회하기 위해 만든 스택
+// Stack exprInStackOrigin;       // 사용자에게 받은 문자열을 삽입한 스택 -> 순회하기 위해 만든 스택
 int continueCheck = 1;         // 사용자에게 입력을 계속 받는 것을 제어하는 변수
 int typeCheck[3] = {0, 0, 0};  // 순서대로, 전위 중위 후위 표현법 (표현법에 해당하면 1, 해당하지 않으면 0)
                                // -> 수식 바뀔 때 마다 초기화 필요
@@ -132,7 +132,7 @@ int prefixExprOriginLen = 0;
 int main(int argc, char *argv[])
 {
     initialize(&exprInStack);
-    initialize(&exprInStackOrigin);
+    // initialize(&exprInStackOrigin);
 
     if (argc == 1) // 프로그램 실행 후 수식입력 받는 경우
     {
@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
         {
             // stack을 초기화
             initialize(&exprInStack);
-            initialize(&exprInStackOrigin);
+            // initialize(&exprInStackOrigin);
             typeCheck[0] = 0;
             typeCheck[1] = 0;
             typeCheck[2] = 0;
@@ -215,7 +215,7 @@ void execute()
     {
         char *data = pop(&tempStack);
         push(&exprInStack, data);
-        push(&exprInStackOrigin, data);
+        // push(&exprInStackOrigin, data);
         infixExpr[infixExprLen++] = data;
         postfixExprOrigin[postfixExprOriginLen++] = data;
         prefixExprOrigin[prefixExprOriginLen++] = data;
@@ -225,7 +225,7 @@ void execute()
     {
         printf("error : wrong token input\n");
         initialize(&exprInStack);
-        initialize(&exprInStackOrigin);
+        // initialize(&exprInStackOrigin);
         return;
     }
 
@@ -240,7 +240,6 @@ void execute()
         printf("\n");
         infixToPrefix();
         infixToPostfix();
-        // evalPost(headerInToPost);
     }
     else
     {
@@ -259,7 +258,6 @@ void execute()
         }
         printf("\n");
         infixToPostfix();
-        // evalPost(headerInToPost);
     }
     else
     {
@@ -279,8 +277,6 @@ void execute()
             insertNode(&headerPost, &tempPost, postfixExprOrigin[i]);
         }
         printf("\n");
-
-        // evalPost(headerPost);
     }
     else
     {
@@ -457,25 +453,21 @@ void expressionType(Stack *stack)
         if (firstData[0] == '(')
         {
             typeCheck[1] = 1;
-            // printf("first : %s secod : %s \n", firstData, secondData);
         }
         // 첫번째가 연산자라면 -> 전위
         else if (strchr("+-*/%^", firstData[0]) != NULL)
         {
             typeCheck[0] = 1;
-            // printf("first : %s secod : %s \n", firstData, secondData);
         }
         // 첫번째가 숫자고, 두번째가 연산자라면 -> 중위
         else if (isNumber(firstData) && strchr("+-*/%^", secondData[0]) != NULL)
         {
             typeCheck[1] = 1;
-            // printf("first : %s secod : %s \n", firstData, secondData);
         }
         // 첫번째와 두번째 값이 모두 숫자라면 -> 후위
         else if (isNumber(firstData) && isNumber(secondData))
         {
             typeCheck[2] = 1;
-            // printf("first : %s secod : %s \n", firstData, secondData);
         }
 
         return;
@@ -725,8 +717,6 @@ void infixToPostfix()
     precedence stack[MAX_STACK_SIZE];
     int top = -1;
 
-    // printf("initial\n");
-    //  printNode(headerInToPost);
     headerInToPost = NULL;
     tempInToPost = NULL;
 
@@ -793,16 +783,11 @@ void evalPost(listNode *header)
         if (isdigit((p->data)[0]) || ((p->data)[0] == '-' && isdigit((p->data)[1])))
         {
             insertNode(&evalPostStack, &evalPostTemp, p->data);
-            // rintf("Number case, \n");
-            // printNode(evalPostStack);
         }
         else // 연산자인 경우
         {
             char *op2 = deleteNode(&evalPostStack, &evalPostTemp);
             char *op1 = deleteNode(&evalPostStack, &evalPostTemp);
-
-            // printf("After pop, \n");
-            // printNode(evalPostStack);
 
             int op2int = atoi(op2); // 문자열로 받아온 값들을 정수형으로 변환 -> 계산을 해야해서
             int op1int = atoi(op1);
@@ -837,15 +822,9 @@ void evalPost(listNode *header)
                 break;
             }
 
-            // printf("op1 : %d, op2 : %d, result : %f \n", op1int, op2int, result);
-
             sprintf(resultChar, "%d", result);
-            // printf("resultChar : %s \n", resultChar);
 
             insertNode(&evalPostStack, &evalPostTemp, resultChar);
-
-            // printf("after result insert, \n");
-            // printNode(evalPostStack);
         }
 
         p = p->link;
