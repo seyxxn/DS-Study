@@ -58,16 +58,12 @@ typedef enum _precedence
     operand
 } precedence;
 
-char expr[MAX_EXPR_SIZE];      // 사용자에게 표기식을 입력받는 변수
-char exprToken[MAX_EXPR_SIZE]; // 사용자에게 표기식을 입력받아 토큰을 구분하여 넣음
-Stack exprInStack;             // 사용자에게 받은 문자열을 삽입한 스택 선언
-// Stack exprInStackOrigin;       // 사용자에게 받은 문자열을 삽입한 스택 -> 순회하기 위해 만든 스택
-int continueCheck = 1;         // 사용자에게 입력을 계속 받는 것을 제어하는 변수
-int typeCheck[3] = {0, 0, 0};  // 순서대로, 전위 중위 후위 표현법 (표현법에 해당하면 1, 해당하지 않으면 0)
-                               // -> 수식 바뀔 때 마다 초기화 필요
+char expr[MAX_EXPR_SIZE];     // 사용자에게 표기식을 입력받는 배열 변수
+Stack exprInStack;            // 사용자에게 받은 문자열을 공백 단위로 쪼개 삽입할 스택 선언
+int continueCheck = 1;        // 사용자에게 입력을 계속 받는 것을 제어하는 변수
+int typeCheck[3] = {0, 0, 0}; // 순서대로, 전위 중위 후위 표현법 (표현법에 해당하면 1, 해당하지 않으면 0)
 
-// 우선순위
-// (, ), +, -, *, /, %, ^, eos 순서
+// 우선순위 (, ), +, -, *, /, %, ^, eos 순서
 int isp[] = {0, 17, 12, 12, 13, 13, 13, 15, 0};
 int icp[] = {20, 17, 12, 12, 13, 13, 13, 15, 0};
 
@@ -83,35 +79,34 @@ void push(Stack *stack, char *data); // 스택에 새로운 노드를 삽입하는 함수
 char *pop(Stack *stack);             // 스택 추출 함수
 char *top(Stack *stack);             // 가장 맨 위 원소 추출 함수
 
-void getTokenToStack(char *expr, Stack *stack); // 문자열형태로 입력받은 수식을 분리하여 스택에 저장해야함
+void getTokenToStack(char *expr, Stack *stack); // 문자열형태로 입력받은 수식을 분리하여 스택에 저장하는 함수
 void printStack(Stack *stack);                  // 스택 확인용 출력 함수
 int isNumber(char *str);                        //  숫자인지 아닌지 확인하는 함수
-int errorCheck(Stack *stack);                   // 토큰 오입력 예외처리 함수
+int errorCheck(Stack *stack);                   // 토큰 오입력 예외처리 함수 -> 예외처리 해야하면 1 반환, 안해도 되면 0 반환
 void expressionType(Stack *stack);              // 전위인지 중위인지 후위인지 확인하는 함수
 
-// 중위-> 후위, 중위->전위, 후위->중위, 전위 ->중위 (변환함수 4개 필요)
-// 후위를 계산하는 함수 필요 -> evalPost();
-
-void printToken(precedence token); // 토근의 인덱스를 인자로 받아, 후위표기식 문자열에 문자를 추가하는 함수
-precedence getToken(Stack *stack, char *symbol);
-
-void expressionPush(Stack *stack, precedence item);
-precedence expresstionPop(Stack *stack);
+precedence getToken(Stack *stack, char *symbol); // 연산자 문자를 받아서, 열거형 precedence로 반환해주는 함수
+void printToken(precedence token);               // 열거형 precedence 형태의 토근을 인자로 받아,
+                                                 // 후위표기식 문자열(postfixExpr)에 연산자를 추가하는 함수
+char *getSymbolString(precedence token);         // 열거형 precedence 형태의 토큰을 인자로 받아, 해당 연산자 문자를 반환하는 함수
+precedence getTokenFromChar(char op);            // 연산자를 문자로 받아서, 열거형 precedence로 반환하는 함수 -> 그냥 getToken과 무슨차이?
 
 void insertNode(listNode **header, listNode **temp, char *data); // 연결리스트에 노드를 추가하는 함수
 char *deleteNode(listNode **header, listNode **temp);            // 연결리스트에서 노드를 삭제하는 함수
 void printNode(listNode *header);                                // 연결리스트를 출력하는 함수
-void infixToPostfix();                                           // 중위표기법을 후위표기법으로 바꾸는 함수
-void evalPost(listNode *header);                                 // 후위표기식을 계산하는 함수
 
-void infixToPrefix();  // 중위표기법을 전위표기법으로 바꾸는 함수
-void postfixToInfix(); // 후위표기법을 중위표기법으로 바꾸는 함수
-void prefixToInfix();  // 전위표기법을 중위표기법으로 바꾸는 함수
+// 프로그램 주요 함수
+void infixToPostfix();           // 중위표기법을 후위표기법으로 바꾸는 함수
+void infixToPrefix();            // 중위표기법을 전위표기법으로 바꾸는 함수
+void postfixToInfix();           // 후위표기법을 중위표기법으로 바꾸는 함수
+void prefixToInfix();            // 전위표기법을 중위표기법으로 바꾸는 함수
+void evalPost(listNode *header); // 후위표기식을 계산하는 함수
 
 char *infixExpr[MAX_EXPR_SIZE] = {
     0,
 };
 int infixExprLen = 0;
+
 char postexpr[MAX_EXPR_SIZE] = {
     0,
 };                            // 후위표기식을 저장하는 배열 변수
@@ -132,7 +127,6 @@ int prefixExprOriginLen = 0;
 int main(int argc, char *argv[])
 {
     initialize(&exprInStack);
-    // initialize(&exprInStackOrigin);
 
     if (argc == 1) // 프로그램 실행 후 수식입력 받는 경우
     {
@@ -140,7 +134,6 @@ int main(int argc, char *argv[])
         {
             // stack을 초기화
             initialize(&exprInStack);
-            // initialize(&exprInStackOrigin);
             typeCheck[0] = 0;
             typeCheck[1] = 0;
             typeCheck[2] = 0;
@@ -197,7 +190,6 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-// 실행함수
 void execute()
 {
     getTokenToStack(expr, &exprInStack);
@@ -215,7 +207,6 @@ void execute()
     {
         char *data = pop(&tempStack);
         push(&exprInStack, data);
-        // push(&exprInStackOrigin, data);
         infixExpr[infixExprLen++] = data;
         postfixExprOrigin[postfixExprOriginLen++] = data;
         prefixExprOrigin[prefixExprOriginLen++] = data;
@@ -225,7 +216,6 @@ void execute()
     {
         printf("error : wrong token input\n");
         initialize(&exprInStack);
-        // initialize(&exprInStackOrigin);
         return;
     }
 
@@ -297,6 +287,7 @@ void execute()
         evalPost(headerPost);
     }
 }
+
 void initialize(Stack *stack)
 {
     stack->top = NULL;
@@ -308,7 +299,6 @@ int isEmpty(Stack *stack)
     return (stack->top == NULL);
 }
 
-// 스택에 새로운 노드를 삽입하는 함수
 void push(Stack *stack, char *data)
 {
     Node *temp = (Node *)malloc(sizeof(Node)); // 노드 생성
@@ -318,7 +308,6 @@ void push(Stack *stack, char *data)
     stack->size = stack->size + 1;
 }
 
-// top을 스택에서 추출하고 반환하는 함수
 char *pop(Stack *stack)
 {
     if (isEmpty(stack))
@@ -345,7 +334,6 @@ char *top(Stack *stack)
     return stack->top->data;
 }
 
-// 문자열을 토큰으로 쪼개서 스택에 push하는 함수
 void getTokenToStack(char *expr, Stack *stack)
 {
     char *ptr = strtok(expr, " \t");
@@ -356,7 +344,6 @@ void getTokenToStack(char *expr, Stack *stack)
     }
 }
 
-// 스택 출력하는 함수
 void printStack(Stack *stack)
 {
     for (Node *p = stack->top; p != NULL; p = p->next)
@@ -365,7 +352,6 @@ void printStack(Stack *stack)
     printf("size : %d\n", stack->size);
 }
 
-// 문자열이 숫자가 맞는지 확인하는 함수
 int isNumber(char *str)
 {
     int dotCnt = 0; // 소수점의 개수를 세는 변수
@@ -394,7 +380,6 @@ int isNumber(char *str)
     return 1; // 모든 검사를 마쳐 숫자임을 확인하고 1을 반환
 }
 
-// 토큰 오입력 예외처리 함수-> 예외 처리해야하면 1을 반환, 예외처리 안해도 되면 0을 반환
 int errorCheck(Stack *stack)
 {
     for (Node *p = stack->top; p != NULL; p = p->next)
@@ -414,8 +399,6 @@ int errorCheck(Stack *stack)
     return 0;
 }
 
-// 전위인지 중위인지 후위인지 확인하는 함수
-// typeCheck 배열 변수를 조정함
 void expressionType(Stack *stack)
 {
     if (stack->size == 1) // stack의 크기가 1일때
@@ -472,64 +455,6 @@ void expressionType(Stack *stack)
 
         return;
     }
-}
-
-void expressionPush(Stack *stack, precedence item)
-{
-    Node *temp = (Node *)malloc(sizeof(Node));
-
-    switch (item)
-    {
-    case lparen:
-        strcpy(temp->data, "(");
-        break;
-    case rparen:
-        strcpy(temp->data, ")");
-        break;
-    case plus:
-        strcpy(temp->data, "+");
-        break;
-    case minus:
-        strcpy(temp->data, "-");
-        break;
-    case times:
-        strcpy(temp->data, "*");
-        break;
-    case divide:
-        strcpy(temp->data, "/");
-        break;
-    case mod:
-        strcpy(temp->data, "%");
-        break;
-    case power:
-        strcpy(temp->data, "^");
-        break;
-    case eos:
-        strcpy(temp->data, "\0");
-        break;
-    case operand:
-        break;
-    }
-
-    temp->next = stack->top;
-    stack->top = temp;
-    stack->size = stack->size + 1;
-}
-
-precedence expresstionPop(Stack *stack)
-{
-    if (isEmpty(stack))
-    {
-        fprintf(stderr, "Stack Underflow");
-        exit(EXIT_FAILURE);
-    }
-
-    Node *temp = stack->top;
-    stack->top = stack->top->next;
-    stack->size = stack->size - 1;
-    precedence data = getToken(stack, temp->data);
-    free(temp);
-    return data;
 }
 
 precedence getToken(Stack *stack, char *symbol)
@@ -762,6 +687,221 @@ void infixToPostfix()
     printNode(headerInToPost);
 }
 
+void infixToPrefix()
+{
+    precedence stack[MAX_STACK_SIZE];
+    int top = -1;
+
+    headerInToPre = NULL;
+    tempInToPre = NULL;
+
+    // 배열에 저장된 중위표기법을 뒤에서부터 읽어야함
+    // 주위 ) 뒤에서부터 읽기 때문에 오른쪽 괄호가 왼쪽 괄호보다 먼저 읽힘
+    for (int i = infixExprLen - 1; i >= 0; i--)
+    {
+        char *symbol = infixExpr[i];
+
+        // 피연산자인 경우 (양수거나 음수거나)
+        if (isdigit(symbol[0]) || (symbol[0] == '-' && isdigit(symbol[1])))
+        {
+            insertNode(&headerInToPre, &tempInToPre, symbol); // 바로 연결리스트에 넣음
+        }
+        else if (strcmp(symbol, ")") == 0) // 오른쪽 괄호라면
+        {
+            stack[++top] = rparen; // 스택에 넣음
+        }
+        else if (strcmp(symbol, "(") == 0) // 왼쪽 괄호라면
+        {
+            while (stack[top] != rparen) // 오른쪽 괄호가 나올 때 까지 연결리스트에 넣음
+            {
+                insertNode(&headerInToPre, &tempInToPre, getSymbolString(stack[top--]));
+            }
+            top--;
+        }
+        else
+        {
+            char op = symbol[0];
+            while (top >= 0 && isp2[stack[top]] > icp2[getTokenFromChar(op)])
+            {
+                insertNode(&headerInToPre, &tempInToPre, getSymbolString(stack[top--]));
+            }
+            stack[++top] = getTokenFromChar(op);
+        }
+    }
+
+    while (top >= 0)
+    {
+        insertNode(&headerInToPre, &tempInToPre, getSymbolString(stack[top--]));
+    }
+
+    headerInToPreReverse = NULL;
+    tempInToPreReverse = NULL;
+
+    listNode *p = headerInToPre;
+
+    while (headerInToPre != NULL)
+    {
+        char *data = deleteNode(&headerInToPre, &tempInToPre);
+        insertNode(&headerInToPreReverse, &tempInToPreReverse, data);
+        free(data);
+    }
+
+    printf("- PR : ");
+    printNode(headerInToPreReverse);
+}
+
+void postfixToInfix()
+{
+    headerPostToIn = NULL;
+    tempPostToIn = NULL;
+
+    for (int i = 0; i <= postfixExprOriginLen - 1; i++)
+    {
+        char *symbol = postfixExprOrigin[i];
+        // 숫자라면 -> 연결리스트에 새로운 노드로 삽입
+        if (isdigit(symbol[0]) || (symbol[0] == '-' && isdigit(symbol[1])))
+        {
+            insertNode(&headerPostToIn, &tempPostToIn, symbol);
+        }
+        else // 연산자라면
+        {
+            char *op2 = deleteNode(&headerPostToIn, &tempPostToIn);
+            char *op1 = deleteNode(&headerPostToIn, &tempPostToIn);
+
+            char *temp = malloc(sizeof(char) * 100);
+            temp[0] = '\0';
+
+            if (i == postfixExprOriginLen - 1)
+            {
+                strcat(temp, op1);
+                strcat(temp, " ");
+                strcat(temp, symbol);
+                strcat(temp, " ");
+                strcat(temp, op2);
+            }
+            else
+            {
+                strcat(temp, "(");
+                strcat(temp, " ");
+
+                strcat(temp, op1);
+                strcat(temp, " ");
+
+                strcat(temp, symbol);
+                strcat(temp, " ");
+
+                strcat(temp, op2);
+                strcat(temp, " ");
+
+                strcat(temp, ")");
+            }
+
+            insertNode(&headerPostToIn, &tempPostToIn, temp);
+        }
+    }
+
+    printf("- IN : ");
+    printNode(headerPostToIn);
+
+    // insertExpr에 넣기
+    // 초기화
+    memset(infixExpr, 0, infixExprLen);
+    infixExprLen = 0;
+
+    listNode *p = headerPostToIn;
+    for (int i = 0; p != NULL; i++)
+    {
+        char *data = p->data;
+        char *token = strtok(data, " ");
+
+        while (token != NULL)
+        {
+            infixExpr[infixExprLen] = strdup(token);
+            infixExprLen++;
+
+            token = strtok(NULL, " ");
+        }
+
+        p = p->link;
+    }
+}
+
+void prefixToInfix()
+{
+    headerPreToIn = NULL;
+    tempPreToIn = NULL;
+    // 저장된 전위표기법을 역순으로 읽어야함
+    for (int i = prefixExprOriginLen - 1; i >= 0; i--)
+    {
+        char *symbol = prefixExprOrigin[i];
+        // 피연산자인 경우 (양수거나 음수거나)
+        if (isdigit(symbol[0]) || (symbol[0] == '-' && isdigit(symbol[1])))
+        {
+            insertNode(&headerPreToIn, &tempPreToIn, symbol); // 바로 연결리스트에 넣음
+        }
+        else // 연산자인 경우
+        {
+            char *op1 = deleteNode(&headerPreToIn, &tempPreToIn);
+            char *op2 = deleteNode(&headerPreToIn, &tempPreToIn);
+
+            char *temp = malloc(sizeof(char) * 100);
+            temp[0] = '\0';
+
+            if (i == 0)
+            {
+                strcat(temp, op1);
+                strcat(temp, " ");
+                strcat(temp, symbol);
+                strcat(temp, " ");
+                strcat(temp, op2);
+            }
+            else
+            {
+                strcat(temp, "(");
+                strcat(temp, " ");
+
+                strcat(temp, op1);
+                strcat(temp, " ");
+
+                strcat(temp, symbol);
+                strcat(temp, " ");
+
+                strcat(temp, op2);
+                strcat(temp, " ");
+
+                strcat(temp, ")");
+            }
+
+            insertNode(&headerPreToIn, &tempPreToIn, temp);
+        }
+    }
+
+    printf("- IN : ");
+    printNode(headerPreToIn);
+
+    // insertExpr에 넣기
+    // 초기화
+    memset(infixExpr, 0, infixExprLen);
+    infixExprLen = 0;
+
+    listNode *p = headerPreToIn;
+    for (int i = 0; p != NULL; i++)
+    {
+        char *data = p->data;
+        char *token = strtok(data, " ");
+
+        while (token != NULL)
+        {
+            infixExpr[infixExprLen] = strdup(token);
+            infixExprLen++;
+
+            token = strtok(NULL, " ");
+        }
+
+        p = p->link;
+    }
+}
+
 void evalPost(listNode *header)
 {
     int result = 0;                 // 결과값을 저장할 변수
@@ -831,224 +971,4 @@ void evalPost(listNode *header)
     }
 
     printf("\nresult : %d\n", result);
-}
-
-// 중위표기법을 전위표기법으로 바꾸는 함수
-void infixToPrefix()
-{
-    precedence stack[MAX_STACK_SIZE];
-    int top = -1;
-
-    headerInToPre = NULL;
-    tempInToPre = NULL;
-
-    // 배열에 저장된 중위표기법을 뒤에서부터 읽어야함
-    // 주위 ) 뒤에서부터 읽기 때문에 오른쪽 괄호가 왼쪽 괄호보다 먼저 읽힘
-    for (int i = infixExprLen - 1; i >= 0; i--)
-    {
-        char *symbol = infixExpr[i];
-
-        // 피연산자인 경우 (양수거나 음수거나)
-        if (isdigit(symbol[0]) || (symbol[0] == '-' && isdigit(symbol[1])))
-        {
-            insertNode(&headerInToPre, &tempInToPre, symbol); // 바로 연결리스트에 넣음
-        }
-        else if (strcmp(symbol, ")") == 0) // 오른쪽 괄호라면
-        {
-            stack[++top] = rparen; // 스택에 넣음
-        }
-        else if (strcmp(symbol, "(") == 0) // 왼쪽 괄호라면
-        {
-            while (stack[top] != rparen) // 오른쪽 괄호가 나올 때 까지 연결리스트에 넣음
-            {
-                insertNode(&headerInToPre, &tempInToPre, getSymbolString(stack[top--]));
-            }
-            top--;
-        }
-        else
-        {
-            char op = symbol[0];
-            while (top >= 0 && isp2[stack[top]] > icp2[getTokenFromChar(op)])
-            {
-                insertNode(&headerInToPre, &tempInToPre, getSymbolString(stack[top--]));
-            }
-            stack[++top] = getTokenFromChar(op);
-        }
-    }
-
-    while (top >= 0)
-    {
-        insertNode(&headerInToPre, &tempInToPre, getSymbolString(stack[top--]));
-    }
-
-    headerInToPreReverse = NULL;
-    tempInToPreReverse = NULL;
-
-    listNode *p = headerInToPre;
-
-    while (headerInToPre != NULL)
-    {
-        char *data = deleteNode(&headerInToPre, &tempInToPre);
-        insertNode(&headerInToPreReverse, &tempInToPreReverse, data);
-        free(data);
-    }
-
-    printf("- PR : ");
-    printNode(headerInToPreReverse);
-}
-
-// 후위표기법을 중위표기법으로 바꾸는 함수
-void postfixToInfix()
-{
-    headerPostToIn = NULL;
-    tempPostToIn = NULL;
-
-    for (int i = 0; i <= postfixExprOriginLen - 1; i++)
-    {
-        char *symbol = postfixExprOrigin[i];
-        // 숫자라면 -> 연결리스트에 새로운 노드로 삽입
-        if (isdigit(symbol[0]) || (symbol[0] == '-' && isdigit(symbol[1])))
-        {
-            insertNode(&headerPostToIn, &tempPostToIn, symbol);
-        }
-        else // 연산자라면
-        {
-            char *op2 = deleteNode(&headerPostToIn, &tempPostToIn);
-            char *op1 = deleteNode(&headerPostToIn, &tempPostToIn);
-
-            char *temp = malloc(sizeof(char) * 100);
-            temp[0] = '\0';
-
-            if (i == postfixExprOriginLen - 1)
-            {
-                strcat(temp, op1);
-                strcat(temp, " ");
-                strcat(temp, symbol);
-                strcat(temp, " ");
-                strcat(temp, op2);
-            }
-            else
-            {
-                strcat(temp, "(");
-                strcat(temp, " ");
-
-                strcat(temp, op1);
-                strcat(temp, " ");
-
-                strcat(temp, symbol);
-                strcat(temp, " ");
-
-                strcat(temp, op2);
-                strcat(temp, " ");
-
-                strcat(temp, ")");
-            }
-
-            insertNode(&headerPostToIn, &tempPostToIn, temp);
-        }
-    }
-
-    printf("- IN : ");
-    printNode(headerPostToIn);
-
-    // insertExpr에 넣기
-
-    // 초기화
-    memset(infixExpr, 0, infixExprLen);
-    infixExprLen = 0;
-
-    listNode *p = headerPostToIn;
-    for (int i = 0; p != NULL; i++)
-    {
-        char *data = p->data;
-        char *token = strtok(data, " ");
-
-        while (token != NULL)
-        {
-            infixExpr[infixExprLen] = strdup(token);
-            infixExprLen++;
-
-            token = strtok(NULL, " ");
-        }
-
-        p = p->link;
-    }
-}
-
-// 전위표기법을 중위표기법으로 바꾸는 함수
-void prefixToInfix()
-{
-    headerPreToIn = NULL;
-    tempPreToIn = NULL;
-    // 저장된 전위표기법을 역순으로 읽어야함
-    for (int i = prefixExprOriginLen - 1; i >= 0; i--)
-    {
-        char *symbol = prefixExprOrigin[i];
-        // 피연산자인 경우 (양수거나 음수거나)
-        if (isdigit(symbol[0]) || (symbol[0] == '-' && isdigit(symbol[1])))
-        {
-            insertNode(&headerPreToIn, &tempPreToIn, symbol); // 바로 연결리스트에 넣음
-        }
-        else // 연산자인 경우
-        {
-            char *op1 = deleteNode(&headerPreToIn, &tempPreToIn);
-            char *op2 = deleteNode(&headerPreToIn, &tempPreToIn);
-
-            char *temp = malloc(sizeof(char) * 100);
-            temp[0] = '\0';
-
-            if (i == 0)
-            {
-                strcat(temp, op1);
-                strcat(temp, " ");
-                strcat(temp, symbol);
-                strcat(temp, " ");
-                strcat(temp, op2);
-            }
-            else
-            {
-                strcat(temp, "(");
-                strcat(temp, " ");
-
-                strcat(temp, op1);
-                strcat(temp, " ");
-
-                strcat(temp, symbol);
-                strcat(temp, " ");
-
-                strcat(temp, op2);
-                strcat(temp, " ");
-
-                strcat(temp, ")");
-            }
-
-            insertNode(&headerPreToIn, &tempPreToIn, temp);
-        }
-    }
-
-    printf("- IN : ");
-    printNode(headerPreToIn);
-
-    // insertExpr에 넣기
-
-    // 초기화
-    memset(infixExpr, 0, infixExprLen);
-    infixExprLen = 0;
-
-    listNode *p = headerPreToIn;
-    for (int i = 0; p != NULL; i++)
-    {
-        char *data = p->data;
-        char *token = strtok(data, " ");
-
-        while (token != NULL)
-        {
-            infixExpr[infixExprLen] = strdup(token);
-            infixExprLen++;
-
-            token = strtok(NULL, " ");
-        }
-
-        p = p->link;
-    }
 }
