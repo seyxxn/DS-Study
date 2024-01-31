@@ -806,7 +806,7 @@ void evalPost(listNode *header)
                 break;
             case '/':
                 result = op1int / op2int;
-                if (op1int == 0 || op2int == 0)
+                if (op2int == 0)
                 {
                     printf("\nresult : Arithmetic error(cannot devide by zero)\n");
                     return;
