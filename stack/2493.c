@@ -1,88 +1,98 @@
 #include <stdio.h>
 #include <stdlib.h>
 int n;
-int stack[500001];
-int ansStack[500001];
-int top = -1;
-void push(int x);
-int pop();
-int peek(int idx);
-void stackPrint(int arr[]);
+
+typedef struct stackNode
+{
+    int index;  // 탑의 번호
+    int height; // 탑의 높이
+    struct stackNode *link;
+} stackNode;
+
+void push(stackNode **top, int index, int height);
+int pop(stackNode **top);
+int peek(stackNode *top);
+void solve(int n, int heights[]);
+void printStack(stackNode *top);
 
 int main()
 {
-    scanf("%d", &n); // 사용자로부터 n을 입력 받음
+    scanf("%d", &n);
 
-    // 높이를 입력받고, stack에 넣음
+    int heights[n]; // 사용자가 입력할 높이들을 저장할 배열 선언
     for (int i = 0; i < n; i++)
     {
-        int enter;
-        scanf("%d", &enter);
-        push(enter);
+        scanf("%d", &heights[i]);
     }
-    int breakOutLoop = 0;
-
-    for (int i = n - 1; i >= 0 && !breakOutLoop; i--)
-    {
-        int popValue = pop(); // 우선 무조건 하나를 pop
-        // pop된 값과 가장 상위 값을 비교
-        // pop된 값보다 상위 값이 작으면 -> 그냥 지나침 -> pop
-        // pop된 값보다 값이 큰 상위 값이 나올 때 까지 반복해야함
-        int idx = top;
-        while (popValue > peek(idx))
-        {
-            if (idx - 1 > 0)
-            {
-                idx--;
-            }
-            else
-            {
-                breakOutLoop = 1;
-                break;
-            }
-        }
-        // 반복문 탈출함 pop된 값보다 상위 값이 커짐
-        ansStack[i] = idx + 1; // top은 -1부터 시작하지만, 출력할때는 1번째부터니까 +1
-    }
-
-    ansStack[0] = 0; // 가장 먼저 세워진 탑은 보낼 수 없음
-
-    // 가장 높은 탑도 보낼 수 없음
-    int max = 0;
-    int maxIdx = 0;
-    for (int i = 0; i < n; i++)
-    {
-        if (stack[i] >= max)
-        {
-            max = stack[i];
-            maxIdx = i;
-        }
-    }
-    ansStack[maxIdx] = 0;
-
-    stackPrint(ansStack);
+    solve(n, heights);
+    return 0;
 }
 
-void push(int x)
+// 노드 삽입 함수
+void push(stackNode **top, int index, int height)
 {
-    stack[++top] = x;
-}
-// 가장 위에있는 값을 삭제하는 함수
-int pop()
-{
-    return stack[top--];
-}
-// 해당하는 인덱스의 값을 반환해주는 함수
-int peek(int idx)
-{
-    return stack[idx];
+    stackNode *newNode = (stackNode *)malloc(sizeof(stackNode));
+    newNode->index = index;
+    newNode->height = height;
+    newNode->link = *top;
+    *top = newNode;
 }
 
-void stackPrint(int arr[])
+// 노드 삭제 함수 (가장 위에있는 노드를 삭제하며 그 노드의 인덱스를 반환함)
+int pop(stackNode **top)
 {
-    for (int i = 0; i < n; i++)
-    {
-        printf("%d ", arr[i]);
-    }
+    if (*top == NULL)
+        return -1;
+
+    stackNode *deleteNode = *top;
+    int index = deleteNode->index;
+    *top = (*top)->link;
+
+    free(deleteNode);
+    return index;
+}
+
+// 가장 위에있는 수를 반환하는 함수
+int peek(stackNode *top)
+{
+    if (top == NULL)
+        return -1;
+    return top->height;
+}
+
+void printStack(stackNode *top)
+{
+    for (; top; top = top->link)
+        printf("[%d] %d -> ", top->index, top->height);
     printf("\n");
+}
+
+// 풀이 함수
+void solve(int n, int heights[])
+{
+    // top을 가리키는 포인터 선언
+    stackNode *top = NULL;
+    int result[n]; // 결과 값을 저장할 배열 선언
+
+    // n번 반복문 실행
+    for (int i = 0; i < n; i++)
+    {
+        while (top != NULL && heights[i] >= peek(top))
+        {
+            pop(&top);
+        }
+
+        if (top == NULL)
+            result[i] = 0;
+        else
+            result[i] = top->index;
+
+        push(&top, i + 1, heights[i]);
+        // printStack(top);
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        printf("%d ", result[i]);
+    }
 }
