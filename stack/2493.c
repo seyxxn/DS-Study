@@ -82,7 +82,7 @@ void stackPrint(int arr[])
 {
     for (int i = 0; i < n; i++)
     {
-        printf("[%d] %d ", i, arr[i]);
+        printf("%d ", arr[i]);
     }
     printf("\n");
 }
