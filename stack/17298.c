@@ -30,7 +30,7 @@ int main()
     return 0;
 }
 
-void push(stackNode **top, int index, int data)
+void push(stackNode **top, int data)
 {
     stackNode *newNode = (stackNode *)malloc(sizeof(stackNode));
     newNode->data = data;
@@ -68,18 +68,36 @@ void solve(int n, int arr[])
     stackNode *top = NULL;
     int result[n];
 
-    for (int i = 0; i < n; i++)
+    for (int i = n - 1; i >= 0; i--)
     {
-        /* for (int j = 0; j < n; j++)
+        if (top == NULL)
         {
-            while (*top != NULL && peek(&top) < arr[j])
-            {
-                push(&top, arr[j]);
-            }
-            
-            push(&top, arr[j]);
-        } */
+            result[i] = -1;
+            push(&top, arr[i]);
+            continue;
+        }
+        while (top != NULL && peek(top) <= arr[i])
+        {
+            pop(&top);
+        }
+        result[i] = peek(top);
+        push(&top, arr[i]);
     }
+
+    /* 조금 더 깔끔한 for문
+    for (int i = n - 1; i >= 0; i--)
+    {
+        while (top != NULL && peek(top) <= arr[i])
+        {
+            pop(&top);
+        }
+        if (top == NULL)
+            result[i] = -1;
+        else
+            result[i] = peek(top);
+        push(&top, arr[i]);
+    }
+    */
 
     for (int i = 0; i < n; i++)
         printf("%d ", result[i]);
