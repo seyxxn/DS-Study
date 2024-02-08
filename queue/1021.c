@@ -14,6 +14,7 @@ typedef struct Deque
 } Deque;
 
 Deque deque;
+int n, m;
 
 void pushFront(Deque *deque, int n);
 void pushBack(Deque *deque, int n);
@@ -23,14 +24,13 @@ int isEmpty(Deque *deque);
 int front(Deque *deque);
 int back(Deque *deque);
 void printDeque(Deque *deque);
-int solve(Deque *deque, int arr[]);
+void solve(Deque *deque, int arr[]);
 
 int main()
 {
     deque.head = NULL;
     deque.tail = NULL;
 
-    int n, m;
     scanf("%d %d", &n, &m);
     int arr[m];
     for (int i = 0; i < m; i++)
@@ -42,10 +42,7 @@ int main()
     {
         pushBack(&deque, i);
     }
-    printDeque(&deque);
-
-    printf("%d\n", solve(&deque, arr));
-
+    solve(&deque, arr);
     return 0;
 }
 
@@ -118,7 +115,7 @@ int popBack(Deque *deque)
     if (deleteNode == NULL)
         return -1;
 
-    if (deleteNode->next == NULL)
+    if (deleteNode->prev == NULL)
     {
         deque->head = NULL;
         deque->tail = NULL;
@@ -157,11 +154,45 @@ void printDeque(Deque *deque)
         printf("%d ", cur->data);
         cur = cur->next;
     }
+    printf("\n");
 }
 
-int solve(Deque *deque, int arr[])
+
+void solve(Deque *deque, int arr[])
 {
     int check = 0;
 
-    return check;
+    for(int i = 0; i < m; i++)
+    {
+        while(deque->head->data != arr[i])
+        {
+            check++;
+            int headCnt = 0;
+            int tailCnt = 0;
+            Node *headTo = deque->head;
+            Node *tailTo = deque->tail;
+            while(headTo->data != arr[i]){
+                headCnt++;
+                headTo = headTo->next;
+            }
+            while(tailTo->data != arr[i]){
+                tailCnt++;
+                tailTo = tailTo->prev;
+            }
+
+            if (headCnt <= tailCnt +1)
+            {
+                pushBack(deque, popFront(deque));
+            }else{
+                pushFront(deque, popBack(deque));
+            }
+        }
+
+        if (deque->head->data == arr[i]){
+            popFront(deque);
+        }
+        
+    }
+    
+    printf("%d", check);
 }
