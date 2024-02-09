@@ -3,8 +3,8 @@
 #include <string.h>
 int t; // 테스트케이스
 char enterFunction[100001]; // 수행할 함수를 담을 배열
-char input[7000000];
-int numbers[100001];
+char input[400001]; 
+int numbers[100001]; 
 int headOrTail = 0; 
 // head부터시작하면 0, Tail부터 시작하면 1
 // 실제로 뒤집어서 저장하는 것은 시간초과가 나서
@@ -28,7 +28,7 @@ int popFront(Deque *deque);
 int popBack(Deque *deque);
 int isEmpty(Deque *deque);
 void printDeque(Deque *deque);
-void clearDeque(Deque *deque); // Deque를 비우는 함수 추가
+void clearDeque(Deque *deque);
 void solve(Deque *deque, int n, int numbers[], char enterFunction[]);
 
 int main(){
@@ -46,7 +46,7 @@ int main(){
         scanf("%s", enterFunction);
         scanf("%d", &n);
 
-        fflush(stdin);
+        while(getchar() != '\n');
         fgets(input, sizeof(input), stdin);
 
         char *token = strtok(input, "[],");
@@ -132,12 +132,12 @@ int popFront(Deque *deque){
     Node *deleteNode = deque->head;
     int deleteNum = deleteNode->data;
     
-    if (deleteNode->next){
-        deleteNode->next->prev = NULL;
-        deque->head = deleteNode->next;
-    }else{
+    if (deque->size == 1){
         deque->head = NULL;
         deque->tail = NULL;
+    }else{
+        deque->head = deleteNode->next;
+        deque->head->prev = NULL;
     }
     deque->size--;
 
@@ -153,12 +153,12 @@ int popBack(Deque *deque){
     Node *deleteNode = deque->tail;
     int deleteNum = deleteNode->data;
 
-    if (deleteNode->prev){
-        deleteNode->prev->next = NULL;
-        deque->tail = deleteNode->prev;
-    }else{
+    if (deque->size == 1){
         deque->head = NULL;
         deque->tail = NULL;
+    }else{
+        deque->tail = deleteNode->prev;
+        deque->tail->next = NULL;
     }
     deque->size--;
 
