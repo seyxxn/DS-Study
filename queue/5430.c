@@ -5,6 +5,10 @@ int t; // 테스트케이스
 char enterFunction[100001]; // 수행할 함수를 담을 배열
 char input[7000000];
 int numbers[100001];
+int headOrTail = 0; 
+// head부터시작하면 0, Tail부터 시작하면 1
+// 실제로 뒤집어서 저장하는 것은 시간초과가 나서
+// 뒤집지 않고, 출력하는 시작점을 바꾸는 방법으로 변경
 
 typedef struct Node{
     int data;
@@ -32,6 +36,7 @@ int main(){
     for(int i = 0; i < t; i++){
         int n;
         int num_count = 0;
+        headOrTail = 0;
 
         Deque deque;
         deque.head = NULL;
@@ -43,7 +48,6 @@ int main(){
 
         fflush(stdin);
         fgets(input, sizeof(input), stdin);
-        // printf("input : %s\n", input);
 
         char *token = strtok(input, "[],");
         while (token != NULL){
@@ -68,24 +72,19 @@ void solve(Deque *deque, int n, int numbers[], char enterFunction[]){
     for(int i = 0; i < functionLen; i++)
     {
         if ( enterFunction[i] == 'R'){
-            
-            Deque newDeque;
-            newDeque.head = NULL;
-            newDeque.tail = NULL;
-            newDeque.size = 0;
-            
-            while(deque->size != 0){
-                pushBack(&newDeque, popBack(deque));
-            }
-
-            *deque = newDeque; 
+            if (headOrTail == 0)
+                headOrTail = 1;
+            else if (headOrTail == 1)
+                headOrTail = 0;
         }
         else if (enterFunction[i] == 'D'){
             if (deque->size == 0){
                 printf("error\n");
                 return ;
-            }else{
+            }else if (headOrTail == 0){
                 popFront(deque);
+            }else if (headOrTail == 1){
+                popBack(deque);
             }
         }
     }
@@ -177,15 +176,28 @@ int isEmpty(Deque *deque){
 
 void printDeque(Deque *deque)
 {
+    if (headOrTail == 0){
     Node *cur = deque->head;
     printf("[");
-    while (cur) {
-        if (cur->next)
-            printf("%d,", cur->data);
-        else
-            printf("%d", cur->data);
-        cur = cur->next;
-    } printf("]\n");
+        while (cur) {
+            if (cur->next)
+                printf("%d,", cur->data);
+            else
+                printf("%d", cur->data);
+            cur = cur->next;
+        } printf("]\n");
+    }
+    else if (headOrTail == 1){
+    Node *cur = deque->tail;
+    printf("[");
+        while (cur) {
+            if (cur->prev)
+                printf("%d,", cur->data);
+            else
+                printf("%d", cur->data);
+            cur = cur->prev;
+        } printf("]\n");
+    }
 }
 
 void clearDeque(Deque *deque) {
