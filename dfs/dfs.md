@@ -22,3 +22,9 @@
   (8) 1과 인접한 노드를 살펴본다. 모두 이미 방문한 노드이다. 따라서 다시 0으로 돌아가서 탐색하지 않은 정점이 있는지 확인한다.  
   (9) 0으로 돌아왔다. (시작노드로 돌아옴) 탐색 끝.  
 - 탐색 결과 : 방문 순서 0 1 2 3 4
+
+- DFS 코드 참고
+https://blog.naver.com/nabilera1/222155838596
+https://velog.io/@kysung95/%EC%9E%90%EB%A3%8C%EA%B5%AC%EC%A1%B0-C%EB%A1%9C-%EC%84%A4%EB%AA%85%ED%95%98%EB%8A%94-%EA%B7%B8%EB%9E%98%ED%94%84-%ED%83%90%EC%83%89%EA%B3%BC-DFS
+https://snupi.tistory.com/106
+
