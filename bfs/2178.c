@@ -5,7 +5,6 @@ int graph[101][101] = {0};
 int visited[101][101] = {0};
 int dx[4] = {1, -1, 0, 0};
 int dy[4] = {0, 0, 1, -1};
-int ans = 0;
 
 typedef struct QueuePoint
 {
@@ -21,7 +20,7 @@ typedef struct QueueType
 
 void queue_init(QueueType *q)
 {
-    q->front = q->rear = 0;
+    q->front = q->rear = -1;
 }
 
 int is_empty(QueueType *q)
@@ -36,8 +35,8 @@ int is_full(QueueType *q)
 
 void enqueue(QueueType *q, QueuePoint item)
 {
-    if (is_full(q)) return ;
     q->rear = q->rear + 1;
+    if (is_full(q)) return ;
     q->queue[q->rear] = item;
 }
 
@@ -69,7 +68,7 @@ int bfs(int x, int y)
     queue_init(&q); // 큐 초기화
 
     visited[x][y] = 1; // 시작 정점을 방문 표시
-    printf("%d %d visited -> \n", x, y);
+    // printf("%d %d visited -> \n", x, y);
 
     QueuePoint item;
     item.x = x;
@@ -93,7 +92,7 @@ int bfs(int x, int y)
             if (graph[nx][ny] == 0) continue;
             if (graph[nx][ny] == 1 && visited[nx][ny] == 0){
                 visited[nx][ny] = 1; // 방문 표시
-                printf("%d %d visited -> \n", nx, ny);
+                // printf("%d %d visited -> \n", nx, ny);
                 graph[nx][ny] = graph[x][y] + 1; // 현재까지의 거리
                 // graphPrint();
 
