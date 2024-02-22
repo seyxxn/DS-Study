@@ -7,6 +7,8 @@ int visited[101] = {0};
 int ans = 0;
 
 void dfs(int a, int b);
+void graphPrint();
+void visitedPrint();
 
 int main()
 {
@@ -22,10 +24,7 @@ int main()
         graph[y][x] = 1;
     }
 
-    if (A <= B)
-        dfs(A, B);
-    else
-        dfs(B, A);
+    dfs(A, B);
 
     printf("%d\n", ans);
 
@@ -37,20 +36,35 @@ void dfs(int a, int b)
     int i;
     visited[a] = 1; // 시작 정점 방문표시
 
-    for (i = 1; visited[b] == 0; i++)
+    for (i = 1; i <= N; i++)
     {
-        if (i > N)
-        {
-            ans = -1;
-            return;
-        }
-
         if (graph[a][i] == 1 && visited[i] == 0)
         {
             ans++;
-            printf("i : %d, ans : %d \n", i, ans);
             visited[i] = 1;
             dfs(i, b);
         }
     }
+
+    if (visited[b] == 0){
+        ans = -1;
+    }
+}
+
+void graphPrint(){
+    printf("graphPrint \n");
+    for(int i = 1; i <= N; i++){
+        for(int j = 1; j <= N; j++){
+            printf("%d ", graph[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+void visitedPrint(){
+    printf("visitedPrint \n");
+    for(int i = 1; i <= N; i++){
+        printf("%d ", visited[i]);
+    }
+    printf("\n");
 }
