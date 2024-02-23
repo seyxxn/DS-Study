@@ -11,16 +11,17 @@ typedef struct {
 
 // 최소힙 생성 함수
 minHeap *createMinHeap(int capacity){
-    minHeap *heap = (minHeap *)malloc(sizeof(minHeap));
-    heap->array = (int *)malloc(sizeof(int) * capacity);
+    minHeap *heap = (minHeap *)malloc(sizeof(minHeap)); // 힙 구조체 선언 및 할당
+    heap->array = (int *)malloc(sizeof(int) * capacity); // 최대크기만큼
     heap->capacity = capacity;
-    heap->size = 0;
+    heap->size = 0; // 초기 크기는 0
     return heap;
 }
 
 // 최소 힙에서 부모 노드의 인덱스를 반환하는 함수
 int getParentIndex(int index){
     return (index - 1) / 2;
+    // 자신의 부모 인덱스는 항상 (index-1)/2 힙은 완전이진트리기 때문에 가능
 }
 
 // 최소 힙에 원소를 삽입하는 함수
