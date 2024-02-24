@@ -1,124 +1,135 @@
 #include <stdio.h>
 #include <stdlib.h>
-#define MAX_ELEMENT 100001
+#include <math.h>
+// 최소힙 구현
+int n;
 
-// 절대값이 작은 수가 맨 위에 존재하는 트리
-// stdlib.h 헤더파일에 존재하는 abs 함수 이용하기
+typedef struct minHeap {
+    int *array;
+    int capacity;
+    int size;
+} minHeap;
 
-typedef struct heapType
-{
-    int heap[MAX_ELEMENT];
-    int heapSize;
-} heapType;
+minHeap* heap;
 
-heapType *createHeap()
-{
-    heapType *h = (heapType *)malloc(sizeof(heapType));
-    h->heapSize = 0;
-    return h;
+// 최소힙 생성 함수
+minHeap* createMinHeap(int capacity){
+    minHeap *heap = (minHeap *)malloc(sizeof(minHeap));
+    heap->array = (int *)malloc(sizeof(int) * capacity);
+    heap->capacity = capacity;
+    heap->size = 0;
+    return heap;
 }
 
-void push(heapType *h, int item)
-{
-    h->heapSize = h->heapSize + 1;
-    int i = h->heapSize;
-
-    while ((i != 1) && (abs(item) <= abs(h->heap[i / 2])))
-    {
-        if (abs(item) == abs(h->heap[i / 2]))
-        {
-            if (item < h->heap[i / 2])
-            {
-                h->heap[i] = h->heap[i / 2];
-                i /= 2;
-            }
-            else
-                break;
-        }
-        else
-        {
-            h->heap[i] = h->heap[i / 2];
-            i /= 2;
-        }
-    }
-    h->heap[i] = item;
+// 최소힙에서 부모노드의 인덱스를 반환하는 함수
+int getParentIndex(int index){
+    return (index - 1)/ 2;
 }
 
-void pop(heapType *h)
-{
-    if (h->heapSize == 0)
-    {
-        printf("0\n");
-        return;
+// 최소힙에 원소를 삽입하는 함수
+void insert(minHeap *heap, int value){
+    // 힙이 가득 차있는 경우
+    if (heap->size >= heap->capacity){
+        return ;
     }
 
-    int parent = 1;
-    int child = 2;
-    int item = h->heap[1];
-    int temp = h->heap[h->heapSize];
-    h->heapSize = h->heapSize - 1;
+    int i = heap->size;
+    heap->size++;
+    heap->array[i] = value;
 
-    while (child <= h->heapSize)
-    {
-        if (child < h->heapSize && abs(h->heap[child]) > abs(h->heap[child + 1]))
-        {
-            child++; // 왼쪽 자식보다 오른쪽 자식이 더 작은 수라면 child++;
+    // 힙을 재정렬하여 최소힙 성질을 유지
+    while(i != 0 && abs(heap->array[i]) <= abs(heap->array[getParentIndex(i)])){
+
+        // 절대값이 같은 경우 예외처리
+        if (abs(heap->array[i]) == abs(heap->array[getParentIndex(i)]) && heap->array[i] > heap->array[getParentIndex(i)])
+            break;
+
+        int temp = heap->array[i];
+        heap->array[i] = heap->array[getParentIndex(i)];
+        heap->array[getParentIndex(i)] = temp;
+
+        i = getParentIndex(i);
+    }
+}
+
+// 최소힙에서 최솟값을 추출하는 함수
+int extractMin(minHeap *heap){
+    if (heap->size <= 0){
+        return 0;
+    }
+
+    // 최솟값 추출
+    int min = heap->array[0];
+
+    // 마지막 노드를 루트로 옮기고 크기 감소 
+    heap->array[0] = heap->array[heap->size - 1];
+    heap->size--;
+
+    // 최소힙 속성을 만족하도록 재정렬
+    int i = 0; // 루트에서부터 재정렬
+
+    while(1){
+        int leftChildIndex = 2 * i + 1;
+        int rightChildIndex = 2 * i + 2;
+
+        int smallestIndex = i;
+
+        // 왼쪽 자식과 비교 
+        // 왼쪽 자식의 절대값이 현재 노드의 절대값보다 작은 경우, smallestIndex 갱신
+        // 왼쪽 자식의 절대값과 현재 노드의 절대값이 같은 경우에는
+        // 왼쪽 자식의 실제 값이 더 작은 경우에만 smallestIndex 갱신 (즉, 왼쪽자식이 음수)
+        if (leftChildIndex < heap->size &&
+            (abs(heap->array[leftChildIndex]) < abs(heap->array[i]) ||
+            (abs(heap->array[leftChildIndex]) == abs(heap->array[i]) && heap->array[leftChildIndex] < heap->array[i]))) {
+            smallestIndex = leftChildIndex;
         }
 
-        if (child < h->heapSize && abs(h->heap[child] == abs(h->heap[child+1])) && h->heap[child] > h->heap[child+1])
-        {
-            child++;
+        // 오른쪽 자식과 비교 -> 조건 주의 **
+        // i가 아닌 smallestIndex와 비교해야함
+        if (rightChildIndex < heap->size &&
+            (abs(heap->array[rightChildIndex]) < abs(heap->array[smallestIndex]) ||
+            (abs(heap->array[rightChildIndex]) == abs(heap->array[smallestIndex]) && heap->array[rightChildIndex] < heap->array[smallestIndex]))) {
+            
+            smallestIndex = rightChildIndex;
         }
 
-        // 마지막수의 절대값보다 자식의 값이 더 작거나 같다면 반복문 탈출
-        if (abs(temp) < abs(h->heap[child]))
-        {
+        // i가 최솟값의 인덱스와 같으면 힙 속성을 만족하므로 반복문 종료
+        if (i == smallestIndex){
             break;
         }
 
-        if (abs(temp) == abs(h->heap[child]) && temp <= h->heap[child]){
-            break;
-        }
+        // 현재노드와 최솟값 노드 교환
+        int temp = heap->array[i];
+        heap->array[i] = heap->array[smallestIndex];
+        heap->array[smallestIndex] = temp;
 
-        h->heap[parent] = h->heap[child];
-        parent = child;
-        child *= 2;
+        i = smallestIndex;
     }
-    h->heap[parent] = temp;
-
-    printf("%d\n", item);
+    return min;
 }
 
-void printHeap(heapType *h)
-{
-    for (int i = 1; i <= h->heapSize; i++)
-        printf("[%d] : %d, ", i, h->heap[i]);
-    printf("\n");
+void arrayPrint(minHeap * heap){
+    printf("array print : ");
+    for(int i = 0; i < heap->size; i++){
+        printf("%d ", heap->array[i]);
+    } printf("\n");
 }
 
-int main()
-{
-    int n;
+int main(){
     scanf("%d", &n);
 
-    heapType *h = createHeap();
+    heap = createMinHeap(100001);
 
-    while (n--)
-    {
+    for(int i = 0; i < n; i++){
         int enter;
         scanf("%d", &enter);
-
-        switch (enter)
-        {
-        case 0:
-            pop(h);
-            break;
-
-        default:
-            push(h, enter);
-            break;
+        if (enter == 0){
+            printf("%d\n", extractMin(heap));
+            // arrayPrint(heap);
+        }else{
+            insert(heap, enter);
+            // arrayPrint(heap);
         }
-        printHeap(h);
     }
     return 0;
 }
