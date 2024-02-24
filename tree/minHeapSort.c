@@ -53,16 +53,20 @@ int extractMin(minHeap *heap)
         exit(EXIT_FAILURE);
     }
     // 최솟값 추출
-    int min = heap->array[0];
+    int min = heap->array[0]; // 변수에 최솟값을 저장해두어야함
     // 마지막 노드를 루트로 옮기고 크기 감소
     heap->array[0] = heap->array[heap->size - 1];
     heap->size--;
     // 최소 힙 속성을 만족하도록 재정렬
-    int i = 0;
+    int i = 0; // 루트에서부터 재정렬
+
+    // 위에서부터 정렬하는 반복문
     while(1) {
         int leftChildIndex = 2 * i + 1;
         int rightChildIndex = 2 * i + 2;
-        int smallestIndex = i;
+
+        int smallestIndex = i; // i번째 인덱스부터 비교하기 위한 변수 선언
+
         // 왼쪽 자식과 비교
         if (leftChildIndex < heap->size && heap->array[leftChildIndex] < heap->array[i]){
             smallestIndex = leftChildIndex;
@@ -79,9 +83,10 @@ int extractMin(minHeap *heap)
         int temp = heap->array[i];
         heap->array[i] = heap->array[smallestIndex];
         heap->array[smallestIndex] = temp;
-        i = smallestIndex;
+
+        i = smallestIndex; // i 갱신
     }
-    return min;
+    return min; // 최솟값 반환
 }
 
 // 최소 힙 정렬 함수
@@ -94,7 +99,7 @@ void heapSort(int arr[], int size){
     }
     // 최소 힙에서 원소 추출
     for (int i = 0; i < size; i++){
-        arr[i] = extractMin(heap);
+        arr[i] = extractMin(heap); // 정렬된 값을 차례로 arr 배열에 저장함
     }
 }
 
