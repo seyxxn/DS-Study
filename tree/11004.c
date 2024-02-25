@@ -11,7 +11,7 @@ minHeap *heap;
 
 minHeap * createHeap(int capacity){
     minHeap *heap = (minHeap *)malloc(sizeof(minHeap));
-    heap->array = (int *)malloc(sizeof(int) * 5000001);
+    heap->array = (int *)malloc(sizeof(int) * capacity);
     heap->capacity = capacity;
     heap->size = 0;
     return heap;
@@ -59,7 +59,7 @@ int extractHeap(minHeap *heap){
             smallestIndex = leftChildIndex;
         }
 
-        if (rightChildIndex < heap->size && heap->array[i] > heap->array[rightChildIndex]){
+        if (rightChildIndex < heap->size && heap->array[smallestIndex] > heap->array[rightChildIndex]){
             smallestIndex = rightChildIndex;
         }
 
